@@ -699,9 +699,9 @@ class Util {
 
     public static function getSegundosTrabalhados($ponto) {
         if (empty($ponto['entrada1'])) {
-            return 0;
+            return null;
         }
-
+        
         $t1 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['entrada1']);
         $t2 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['saida1']);
 
@@ -764,7 +764,11 @@ class Util {
     }
 
     public static function getSegundosNormalSemana($ponto, $pontos) {
-        return self::getHorasNormalSemana($ponto, $pontos) * 60 * 60;
+        $horas = self::getHorasNormalSemana($ponto, $pontos);
+        if($horas === null) {
+            return;
+        }
+        return $horas * 60 * 60;
     }
 
     public static function isDomingo($ponto) {
@@ -784,10 +788,6 @@ class Util {
         }
 
         return $segundos;
-    }
-
-    public static function getHorasTrabalhadasSemana($ponto, $pontos) {
-        return self::sec_to_time(self::getSegundosTrabalhadosSemana($ponto, $pontos));
     }
 
     /**
@@ -822,22 +822,14 @@ class Util {
         return Util::sec_to_time(self::getSegundosIrComp($ponto));
     }
 
-    public static function getHorasExtras($ponto, $pontos) {
-        $segundosTrabalhados = self::getSegundosTrabalhados($ponto);
-        $segundosNormal = self::getSegundosNormais($ponto);
+    public static function getHorasExtrasMenosIrComp($ponto, $pontos) {
 
-        if ($segundosTrabalhados < $segundosNormal) {
-            return;
-        }
-
-        $diferencaTotal = $segundosTrabalhados - $segundosNormal;
-
-        $diferencaCobrada = $diferencaTotal - self::getSegundosIrComp($ponto);
-
+        $horaExtra = self::getHorasExtras($ponto, $pontos);
+        $diferencaCobrada = $horaExtra - self::getSegundosIrComp($ponto);
+        
         if ($diferencaCobrada <= 0) {
             return;
         }
-
         $sNormalSemana = self::getSegundosNormalSemana($ponto, $pontos);
         $sTrabalhadaSemana = self::getSegundosTrabalhadosSemana($ponto, $pontos);
 
@@ -845,7 +837,23 @@ class Util {
             return;
         }
 
-        return Util::sec_to_time($diferencaCobrada);
+        return $diferencaCobrada;
+    }
+    
+    public static function getHorasExtras($ponto) {
+        $segundosTrabalhados = self::getSegundosTrabalhados($ponto);
+        $segundosNormal = self::getSegundosNormais($ponto);
+
+        if($segundosTrabalhados === null) {
+            return;
+        }
+        
+        if ($segundosTrabalhados < $segundosNormal) {
+            return;
+        }
+
+        return $segundosTrabalhados - $segundosNormal;
+
     }
 
 }

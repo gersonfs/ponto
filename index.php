@@ -17,6 +17,10 @@ and open the template in the editor.
             table {
                 border-collapse: collapse;
             }
+            
+            tr.Dom td{
+                color: red;
+            }
         </style>
     </head>
     <body>
@@ -82,13 +86,30 @@ and open the template in the editor.
                 <td>Saida</td>
                 <td>H.N.</td>
                 <td>H.T.</td>
-                <td>H.I.C.</td>
                 <td>H.E.</td>
+                <td>H.I.C.</td>
+                <td>H.E. - H.I.C.</td>
                 <td>H. N. S.</td>
+                <td>H. T. S.</td>
             </tr>
                 <?php
-                foreach ($dados as $dado) {
+                $totalHTMes = $totalHNMes = $tSegundosNormais = $tSegundosTrabalhados= 0;
+                foreach ($dados as $i=>$dado) {
                     $dia = Util::getDiaDaSemanaCurto($dado['data']);
+                    $mostrarHoraSemana = (Util::isSabado($dado) && !isset($dados[$i+1]['is_fechamento'])) || isset($dado['is_fechamento']);
+                    
+                    $s1 = $s2 = null;
+                    if($mostrarHoraSemana) {
+                        $s1 = Util::getSegundosNormalSemana($dado, $dados);
+                        $s2 = Util::getSegundosTrabalhadosSemana($dado, $dados);
+                        $totalHNMes += $s1;
+                        $totalHTMes += $s2;
+                    }
+                    
+                    $segundosNormais = Util::getSegundosNormais($dado);
+                    $segundosTrabalhados = Util::getSegundosTrabalhados($dado);
+                    $tSegundosNormais += $segundosNormais;
+                    $tSegundosTrabalhados += $segundosTrabalhados;
                     echo '<tr class="'. $dia .'">';
                     echo '<td>' . $dia . '</td>';
                     echo '<td>' . Util::dataISOToBR($dado['data']) . '</td>';
@@ -97,11 +118,13 @@ and open the template in the editor.
                     echo '<td>' . $dado['saida1'] . '</td>';
                     echo '<td>' . $dado['entrada2'] . '</td>';
                     echo '<td>' . $dado['saida2'] . '</td>';
-                    echo '<td>' . Util::sec_to_time(Util::getSegundosNormais($dado)) . '</td>';
-                    echo '<td>' . Util::getHorasTrabalhadas($dado) . '</td>';
+                    echo '<td>' . Util::sec_to_time($segundosNormais) . '</td>';
+                    echo '<td>' . Util::sec_to_time($segundosTrabalhados) . '</td>';
+                    echo '<td>' . Util::sec_to_time(Util::getHorasExtras($dado)) . '</td>';
                     echo '<td>' . Util::getHorasTrabalhadasIrComp($dado) . '</td>';
-                    echo '<td>' . Util::getHorasExtras($dado, $dados) . '</td>';
-                    echo '<td>' . Util::getHorasNormalSemana($dado, $dados) . '</td>';
+                    echo '<td>' . Util::sec_to_time(Util::getHorasExtrasMenosIrComp($dado, $dados)) . '</td>';
+                    echo '<td>' . Util::sec_to_time($s1) . '</td>';
+                    echo '<td>' . Util::sec_to_time($s2) . '</td>';
                     echo '</tr>';
                     
                     if(isset($dado['is_fechamento'])) {
@@ -112,15 +135,19 @@ and open the template in the editor.
                         echo '<td></td>';
                         echo '<td></td>';
                         echo '<td></td>';
+                        echo '<td>' .  Util::sec_to_time($tSegundosNormais)  . '</td>';
+                        echo '<td>' .  Util::sec_to_time($tSegundosTrabalhados)  . '</td>';
                         echo '<td></td>';
                         echo '<td></td>';
                         echo '<td></td>';
-                        echo '<td></td>';
-                        echo '<td></td>';
+                        echo '<td>'. Util::sec_to_time($totalHNMes) .'</td>';
+                        echo '<td>'. Util::sec_to_time($totalHTMes) .'</td>';
                         echo '</tr>';
                         echo '<tr>';
-                        echo '<td colspan="12"> </td>';
+                        echo '<td colspan="14"> </td>';
                         echo '</tr>';
+                        
+                        $tSegundosNormais = $totalHNMes = $totalHTMes = $tSegundosTrabalhados = 0;
                     }
                 }
                 ?>
