@@ -94,6 +94,7 @@ and open the template in the editor.
             </tr>
                 <?php
                 $totalHTMes = $totalHNMes = $tSegundosNormais = $tSegundosTrabalhados = $sHE = $sHIC = 0;
+                $totaisMeses = [];
                 foreach ($dados as $i=>$dado) {
                     $dia = Util::getDiaDaSemanaCurto($dado['data']);
                     $mostrarHoraSemana = (Util::isSabado($dado) && !isset($dados[$i+1]['is_fechamento'])) || isset($dado['is_fechamento']);
@@ -132,6 +133,13 @@ and open the template in the editor.
                     echo '</tr>';
                     
                     if(isset($dado['is_fechamento'])) {
+                        $totaisMeses[] = [
+                            'normal' => $tSegundosNormais,
+                            'trabalhado' => $tSegundosTrabalhados,
+                            'he' => $sHE,
+                            'hic' => $sHIC,
+                            'periodo' => $dado['data']
+                        ];
                         echo '<tr>';
                         echo '<td colspan="2"><strong>Soma</strong></td>';
                         echo '<td></td>';
@@ -156,6 +164,31 @@ and open the template in the editor.
                 }
                 ?>
         </table>
+        <br /><br />
+
+        Totais
+        <table>
+            <tr>
+                <td>Mes</td>
+                <td>N</td>
+                <td>T</td>
+                <td>HE</td>
+                <td>HIC</td>
+            </tr>
+            <?php 
+            foreach($totaisMeses as $total) {
+                echo '<tr>';
+                echo '<td>'. $total['periodo'] .'</td>';
+                echo '<td>' . Util::sec_to_time($total['normal']) . '</td>';
+                echo '<td>' . Util::sec_to_time($total['trabalhado']) . '</td>';
+                echo '<td>' . Util::sec_to_time($total['he']) . '</td>';
+                echo '<td>' . Util::sec_to_time($total['hic']) . '</td>';
+                echo '</tr>';
+            }
+            ?>
+        </table>
+
+
         </pre>
     </body>
 </html>
