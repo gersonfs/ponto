@@ -60,7 +60,7 @@ class Util {
         $dias = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
         return $dias[date('w', strtotime($data))];
     }
-    
+
     public static function getDiaDaSemanaCurto($data) {
         if (!strlen($data)) {
             return '';
@@ -68,10 +68,76 @@ class Util {
         $dias = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
         return $dias[date('w', strtotime($data))];
     }
-    
+
     public static function isFeriado($data) {
+        return in_array($data, self::getFeriados());
+    }
+
+    public static function isAusencia($data) {
+        return in_array($data, self::getAusencias());
+    }
+
+    public static function isAtestado($data) {
+        return in_array($data, self::getAtestados());
+    }
+
+    public static function isFerias($data) {
+        return in_array($data, self::getFerias());
+    }
+
+    public static function getFeriados() {
+        return self::getRegistrosData('feriado');
+    }
+
+    public static function getAusencias() {
+        return self::getRegistrosData('ausencia');
+    }
+
+    public static function getAtestados() {
+        return self::getRegistrosData('atestado');
+    }
+
+    public static function getFerias() {
+        return self::getRegistrosData('ferias');
+    }
+
+    public static function getRegistrosData($tipo) {
+        static $registros = [];
+        if(isset($registros[$tipo])) {
+            return $registros[$tipo];
+        }
+        
+        $linhas = self::getRegistros();
+        $registros[$tipo] = [];
+        $tipo = strtolower($tipo);
+        foreach ($linhas as $linha) {
+            $p = explode("\t", $linha);
+            if (strtolower(trim($p[1])) == $tipo) {
+                $registros[$tipo][] = self::dataBRToISO(trim($p[0]));
+            }
+        }
+        return $registros[$tipo];
+    }
+
+    public static function getObsData($data) {
+        $linhas = self::getRegistros();
+        $data = Util::dataISOToBR($data);
+        foreach ($linhas as $linha) {
+            $p = explode("\t", $linha);
+            if ($p[0] == $data) {
+                return trim($p[1]);
+            }
+        }
+        return '';
+    }
+
+    private static function getRegistros() {
+        static $linhas = null;
+        if($linhas != null) {
+            return $linhas;
+        }
         $linhas = file('feriados.csv', FILE_IGNORE_NEW_LINES);
-        return in_array(self::dataISOToBR($data), $linhas);
+        return $linhas;
     }
 
     public static function time_to_sec($time) {
@@ -83,11 +149,15 @@ class Util {
     }
 
     public static function sec_to_time($seconds, $mostrarSegundos = false) {
+        if ($seconds === null) {
+            return;
+        }
+
         $hours = floor($seconds / 3600);
         $minutes = floor($seconds % 3600 / 60);
         $seconds = $seconds % 60;
-        
-        if($mostrarSegundos) {
+
+        if ($mostrarSegundos) {
             return sprintf("%02d:%02d:%02d", $hours, $minutes, $seconds);
         }
         return sprintf("%02d:%02d", $hours, $minutes);
@@ -617,163 +687,164 @@ class Util {
     public static function getArrayFeriados() {
         return explode(" ", Parametro::valor('LISTA_DE_FERIADOS'));
     }
-    
+
     public static function getHorasTrabalhadas($ponto) {
         $segundos = self::getSegundosTrabalhados($ponto);
-        if($segundos <= 0) {
-            return ;
+        if ($segundos <= 0) {
+            return;
         }
-            
+
         return self::sec_to_time($segundos, false);
     }
-    
-    
+
     public static function getSegundosTrabalhados($ponto) {
-        if(empty($ponto['entrada1'])) {
+        if (empty($ponto['entrada1'])) {
             return 0;
         }
-        
+
         $t1 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['entrada1']);
         $t2 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['saida1']);
-        
+
         $segundos = $t2->getTimestamp() - $t1->getTimestamp();
-        
-        if(strlen($ponto['entrada2'])) {
+
+        if (strlen($ponto['entrada2'])) {
             $t1 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['entrada2']);
             $t2 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['saida2']);
-            
+
             $segundos += $t2->getTimestamp() - $t1->getTimestamp();
         }
-        
+
         return $segundos;
     }
-    
+
     public static function getSegundosNormais($ponto) {
-        return self::getHorasNormais($ponto) * 60 * 60;
+        $segundos = self::getHorasNormais($ponto);
+        if ($segundos === null) {
+            return;
+        }
+        return $segundos * 60 * 60;
     }
-    
+
     public static function getHorasNormais($ponto) {
         $diaDaSemana = date('w', strtotime($ponto['data']));
-        
+
         //Domingo
-        if($diaDaSemana == 0) {
+        if ($diaDaSemana == 0) {
             return null;
         }
-        
-        if(self::isFeriado($ponto['data'])) {
+
+        if (self::isFeriado($ponto['data'])) {
             return null;
         }
-            
-        if($diaDaSemana == 6) {
+
+        if (self::isFerias($ponto['data'])) {
+            return null;
+        }
+
+        if (self::isAtestado($ponto['data'])) {
+            return null;
+        }
+
+        if ($diaDaSemana == 6) {
             return 4;
         }
-        
+
         return 8;
-        
     }
-    
-    
+
     public static function getHorasNormalSemana($ponto, $pontos) {
         $horas = 0;
-        foreach($pontos as $ponto2) {
-            if($ponto['semana'] == $ponto2['semana']) {
-                $horas += (int)self::getHorasNormais($ponto2);
+        foreach ($pontos as $ponto2) {
+            if ($ponto['semana'] == $ponto2['semana']) {
+                $horas += (int) self::getHorasNormais($ponto2);
             }
         }
-        
+
         return $horas;
     }
-    
+
     public static function getSegundosNormalSemana($ponto, $pontos) {
         return self::getHorasNormalSemana($ponto, $pontos) * 60 * 60;
     }
-    
+
     public static function isDomingo($ponto) {
         return date('w', strtotime($ponto['data'])) == 0;
     }
-    
+
     public static function isSabado($ponto) {
         return date('w', strtotime($ponto['data'])) == 6;
     }
-    
+
     public static function getSegundosTrabalhadosSemana($ponto, $pontos) {
         $segundos = 0;
-        foreach($pontos as $ponto2) {
-            if($ponto['semana'] == $ponto2['semana']) {
+        foreach ($pontos as $ponto2) {
+            if ($ponto['semana'] == $ponto2['semana']) {
                 $segundos += self::getSegundosTrabalhados($ponto2);
             }
         }
-        
+
         return $segundos;
     }
-    
+
     public static function getHorasTrabalhadasSemana($ponto, $pontos) {
         return self::sec_to_time(self::getSegundosTrabalhadosSemana($ponto, $pontos));
     }
-    
+
     /**
      * Máximo 48 minutos
      * @param type $ponto
      * @return type
      */
     public static function getSegundosIrComp($ponto) {
-        
+
         $segundosNormais = self::getSegundosNormais($ponto);
-        $segundosTrabalhados = self::getSegundosTrabalhados($ponto);
         
-        if($segundosTrabalhados <= $segundosNormais) {
+        if($segundosNormais === null) {
+            return;
+        }
+            
+        $segundosTrabalhados = self::getSegundosTrabalhados($ponto);
+
+        if ($segundosTrabalhados <= $segundosNormais) {
             return 0;
         }
-        
+
         $diferenca = $segundosTrabalhados - $segundosNormais;
-        
-        if($diferenca < (48*60)) {
+
+        if ($diferenca < (48 * 60)) {
             return $diferenca;
         }
-        
+
         return 48 * 60;
     }
-    
+
     public static function getHorasTrabalhadasIrComp($ponto) {
-        if(self::isDomingo($ponto)) {
-            return ;
-        }
-        
-        if(self::isSabado($ponto)) {
-            return ;
-        }
-        
-        if(self::isFeriado($ponto['data'])) {
-            return ;
-        }
-        
         return Util::sec_to_time(self::getSegundosIrComp($ponto));
-        
     }
-    
+
     public static function getHorasExtras($ponto, $pontos) {
         $segundosTrabalhados = self::getSegundosTrabalhados($ponto);
         $segundosNormal = self::getSegundosNormais($ponto);
-        
-        if($segundosTrabalhados < $segundosNormal) {
+
+        if ($segundosTrabalhados < $segundosNormal) {
             return;
         }
-        
+
         $diferencaTotal = $segundosTrabalhados - $segundosNormal;
-        
+
         $diferencaCobrada = $diferencaTotal - self::getSegundosIrComp($ponto);
-        
-        if($diferencaCobrada <= 0) {
-            return '';
+
+        if ($diferencaCobrada <= 0) {
+            return;
         }
-        
+
         $sNormalSemana = self::getSegundosNormalSemana($ponto, $pontos);
         $sTrabalhadaSemana = self::getSegundosTrabalhadosSemana($ponto, $pontos);
-        
-        if($sTrabalhadaSemana <= $sNormalSemana) {
-            return Util::sec_to_time($sTrabalhadaSemana) . ' - ' . Util::sec_to_time($sNormalSemana);
+
+        if ($sTrabalhadaSemana <= $sNormalSemana) {
+            return;
         }
-        
+
         return Util::sec_to_time($diferencaCobrada);
     }
 

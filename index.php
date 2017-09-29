@@ -84,25 +84,24 @@ and open the template in the editor.
                 <td>H.T.</td>
                 <td>H.I.C.</td>
                 <td>H.E.</td>
+                <td>H. N. S.</td>
             </tr>
                 <?php
                 foreach ($dados as $dado) {
-                    echo '<tr>';
-                    echo '<td>' . Util::getDiaDaSemanaCurto($dado['data']) . '</td>';
+                    $dia = Util::getDiaDaSemanaCurto($dado['data']);
+                    echo '<tr class="'. $dia .'">';
+                    echo '<td>' . $dia . '</td>';
                     echo '<td>' . Util::dataISOToBR($dado['data']) . '</td>';
-                    echo '<td>' . (Util::isFeriado($dado['data']) ? 'Feriado' : '') . '</td>';
+                    echo '<td>' . Util::getObsData($dado['data']) . '</td>';
                     echo '<td>' . $dado['entrada1'] . '</td>';
                     echo '<td>' . $dado['saida1'] . '</td>';
                     echo '<td>' . $dado['entrada2'] . '</td>';
                     echo '<td>' . $dado['saida2'] . '</td>';
-                    echo '<td>'; 
-                    if(!Util::isDomingo($dado) && !Util::isFeriado($dado['data'])) {
-                        echo Util::sec_to_time(Util::getHorasNormais($dado) * 60 * 60);
-                    }
-                    echo '</td>';
+                    echo '<td>' . Util::sec_to_time(Util::getSegundosNormais($dado)) . '</td>';
                     echo '<td>' . Util::getHorasTrabalhadas($dado) . '</td>';
                     echo '<td>' . Util::getHorasTrabalhadasIrComp($dado) . '</td>';
                     echo '<td>' . Util::getHorasExtras($dado, $dados) . '</td>';
+                    echo '<td>' . Util::getHorasNormalSemana($dado, $dados) . '</td>';
                     echo '</tr>';
                     
                     if(isset($dado['is_fechamento'])) {
@@ -117,16 +116,14 @@ and open the template in the editor.
                         echo '<td></td>';
                         echo '<td></td>';
                         echo '<td></td>';
+                        echo '<td></td>';
                         echo '</tr>';
                         echo '<tr>';
-                        echo '<td colspan="999"> </td>';
+                        echo '<td colspan="12"> </td>';
                         echo '</tr>';
                     }
                 }
                 ?>
-            <tr>
-                <td></td>
-            </tr>
         </table>
         </pre>
     </body>
