@@ -93,7 +93,7 @@ and open the template in the editor.
                 <td>H. T. S.</td>
             </tr>
                 <?php
-                $totalHTMes = $totalHNMes = $tSegundosNormais = $tSegundosTrabalhados = $sHE = $sHIC = 0;
+                $totalHEMenosHIC = $totalHTMes = $totalHNMes = $tSegundosNormais = $tSegundosTrabalhados = $sHE = $sHIC = 0;
                 $totaisMeses = [];
                 foreach ($dados as $i=>$dado) {
                     $dia = Util::getDiaDaSemanaCurto($dado['data']);
@@ -115,6 +115,8 @@ and open the template in the editor.
                     $ic = Util::getSegundosIrComp($dado);
                     $sHE += $he;
                     $sHIC += $ic;
+                    $heHic = Util::getHorasExtrasMenosIrComp($dado, $dados);
+                    $totalHEMenosHIC += $heHic;
                     echo '<tr class="'. $dia .'">';
                     echo '<td>' . $dia . '</td>';
                     echo '<td>' . Util::dataISOToBR($dado['data']) . '</td>';
@@ -127,7 +129,7 @@ and open the template in the editor.
                     echo '<td>' . Util::sec_to_time($segundosTrabalhados) . '</td>';
                     echo '<td>' . Util::sec_to_time($he) . '</td>';
                     echo '<td>' . Util::sec_to_time($ic) . '</td>';
-                    echo '<td>' . Util::sec_to_time(Util::getHorasExtrasMenosIrComp($dado, $dados)) . '</td>';
+                    echo '<td>' . Util::sec_to_time($heHic) . '</td>';
                     echo '<td>' . Util::sec_to_time($s1) . '</td>';
                     echo '<td>' . Util::sec_to_time($s2) . '</td>';
                     echo '</tr>';
@@ -138,6 +140,7 @@ and open the template in the editor.
                             'trabalhado' => $tSegundosTrabalhados,
                             'he' => $sHE,
                             'hic' => $sHIC,
+                            'he-hic' => $totalHEMenosHIC,
                             'periodo' => $dado['data']
                         ];
                         echo '<tr>';
@@ -151,7 +154,7 @@ and open the template in the editor.
                         echo '<td>' .  Util::sec_to_time($tSegundosTrabalhados)  . '</td>';
                         echo '<td>'. Util::sec_to_time($sHE) .'</td>';
                         echo '<td>'. Util::sec_to_time($sHIC) .'</td>';
-                        echo '<td></td>';
+                        echo '<td>'. Util::sec_to_time($totalHEMenosHIC) .'</td>';
                         echo '<td>'. Util::sec_to_time($totalHNMes) .'</td>';
                         echo '<td>'. Util::sec_to_time($totalHTMes) .'</td>';
                         echo '</tr>';
@@ -159,7 +162,7 @@ and open the template in the editor.
                         echo '<td colspan="14"> </td>';
                         echo '</tr>';
                         
-                        $sHIC = $sHE = $tSegundosNormais = $totalHNMes = $totalHTMes = $tSegundosTrabalhados = 0;
+                        $totalHEMenosHIC = $sHIC = $sHE = $tSegundosNormais = $totalHNMes = $totalHTMes = $tSegundosTrabalhados = 0;
                     }
                 }
                 ?>
@@ -174,6 +177,7 @@ and open the template in the editor.
                 <td>T</td>
                 <td>HE</td>
                 <td>HIC</td>
+                <td>HE - HIC</td>
             </tr>
             <?php 
             foreach($totaisMeses as $total) {
@@ -183,6 +187,7 @@ and open the template in the editor.
                 echo '<td>' . Util::sec_to_time($total['trabalhado']) . '</td>';
                 echo '<td>' . Util::sec_to_time($total['he']) . '</td>';
                 echo '<td>' . Util::sec_to_time($total['hic']) . '</td>';
+                echo '<td>' . Util::sec_to_time($total['he-hic']) . '</td>';
                 echo '</tr>';
             }
             ?>
