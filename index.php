@@ -209,7 +209,7 @@ and open the template in the editor.
             <?php 
             foreach($totaisMeses as $total) {
                 echo '<tr>';
-                echo '<td>'. $total['periodo'] .'</td>';
+                echo '<td>'. date('m/Y', strtotime($total['periodo'])) .'</td>';
                 echo '<td>' . Util::sec_to_time($total['normal']) . '</td>';
                 echo '<td>' . Util::sec_to_time($total['trabalhado']) . '</td>';
                 echo '<td>' . Util::sec_to_time($total['he']) . '</td>';
