@@ -118,7 +118,7 @@ and open the template in the editor.
                     $ic = Util::getSegundosIrComp($dado);
                     $sHE += $he;
                     $sHIC += $ic;
-                    $heHic = Util::getHorasExtrasMenosIrComp($dado, $dados);
+                    $heHic = $he - $ic;
                     $totalHEMenosHIC += $heHic;
                     echo '<tr class="'. $dia .'">';
                     echo '<td>' . $dia . '</td>';
@@ -210,14 +210,14 @@ and open the template in the editor.
             foreach($totaisMeses as $total) {
                 echo '<tr>';
                 echo '<td>'. date('m/Y', strtotime($total['periodo'])) .'</td>';
-                echo '<td>' . Util::sec_to_time($total['normal']) . '</td>';
-                echo '<td>' . Util::sec_to_time($total['trabalhado']) . '</td>';
-                echo '<td>' . Util::sec_to_time($total['he']) . '</td>';
-                echo '<td>' . Util::sec_to_time($total['hic']) . '</td>';
-                echo '<td>' . Util::sec_to_time($total['he-hic']) . '</td>';
-                echo '<td>' . Util::sec_to_time($total['h50']) . '</td>';
-                echo '<td>' . Util::sec_to_time($total['h100']) . '</td>';
-                echo '<td>' . Util::sec_to_time($total['h130']) . '</td>';
+                echo '<td>' . number_format($total['normal']/60/60, 2, ",", "") . '</td>';
+                echo '<td>' . number_format($total['trabalhado']/60/60, 2, ",", "") . '</td>';
+                echo '<td>' . number_format($total['he']/60/60, 2, ",", "") . '</td>';
+                echo '<td>' . number_format($total['hic']/60/60, 2, ",", "") . '</td>';
+                echo '<td>' . number_format($total['he-hic']/60/60, 2, ",", "") . '</td>';
+                echo '<td>' . number_format($total['h50']/60/60, 2, ",", "") . '</td>';
+                echo '<td>' . number_format($total['h100']/60/60, 2, ",", "") . '</td>';
+                echo '<td>' . number_format($total['h130']/60/60, 2, ",", "") . '</td>';
                 echo '</tr>';
             }
             ?>
