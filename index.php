@@ -11,7 +11,7 @@ and open the template in the editor.
         <title></title>
         <style>
             table, th, td {
-                border: 1px solid black;
+                border: 1px solid #cecece;
                 padding: 2px;
             }
             table {
@@ -142,13 +142,13 @@ and open the template in the editor.
                     
                     if(isset($dado['is_fechamento'])) {
 
-                        $h50 = $sHE;
+                        $h50 = $totalHEMenosHIC;
                         if($h50 > (22 * 60 * 60)) {
                             $h50 = 22 * 60 * 60;
-                            $h100 = $sHE - $h50;
+                            $h100 = $totalHEMenosHIC - $h50;
                             if($h100 > (38 * 60 * 60)) {
                                 $h100 = 38 * 60 * 60;
-                                $h130 = $sHE - $h50 - $h100;
+                                $h130 = $totalHEMenosHIC - $h50 - $h100;
                             }
                         }
 

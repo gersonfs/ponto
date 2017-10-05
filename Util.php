@@ -809,6 +809,10 @@ class Util {
             return 0;
         }
 
+        if(self::isSabado($ponto)) {
+            return 0;
+        }
+
         $diferenca = $segundosTrabalhados - $segundosNormais;
 
         if ($diferenca < (48 * 60)) {
