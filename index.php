@@ -27,7 +27,7 @@ and open the template in the editor.
         <?php
         include('Util.php');
 
-        $f = fopen('ponto.csv', 'r');
+        $f = fopen('ponto2.csv', 'r');
         $dados = [];
         $i = 0;
         $mes = 0;
@@ -48,7 +48,7 @@ and open the template in the editor.
             $isFechamento = false;
 
 
-            if (trim(strtolower($linha[2])) == 'soma') {
+            if (trim(strtolower($linha[0])) == 'soma') {
                 $dados[$i - 1]['is_fechamento'] = true;
                 $mes++;
                 $semana++;
@@ -56,11 +56,11 @@ and open the template in the editor.
             }
 
             $dados[$i] = [
-                'data' => Util::dataBRToISO($linha[3]),
-                'entrada1' => $linha[5],
-                'saida1' => $linha[6],
-                'entrada2' => $linha[7],
-                'saida2' => $linha[8],
+                'data' => Util::dataBRToISO($linha[1]),
+                'entrada1' => $linha[3],
+                'saida1' => $linha[4],
+                'entrada2' => $linha[5],
+                'saida2' => $linha[6],
                 'mes' => $mes,
                 'semana' => $semana
             ];
