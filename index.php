@@ -27,7 +27,10 @@ and open the template in the editor.
         <?php
         include('Util.php');
 
-        $f = fopen('ponto2.csv', 'r');
+        Util::setPossuiHoraExtraIregularmenteCompensada(false);
+        Util::setTrabalhaSabado(false);
+
+        $f = fopen('ponto3.csv', 'r');
         $dados = [];
         $i = 0;
         $mes = 0;

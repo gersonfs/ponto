@@ -2,6 +2,14 @@
 
 class Util {
 
+    /**
+     * Hora Extra Iregularmente Compensada
+     * @var boolean
+     */
+    private static $possuiHEIC = true;
+
+    private static $trabalhaSabado = true;
+
     public static function getMeses() {
         return array(
             1 => 'Janeiro',
@@ -745,8 +753,16 @@ class Util {
             return null;
         }
 
+        //Sabado
         if ($diaDaSemana == 6) {
-            return 4;
+            if(self::$trabalhaSabado) {
+                return 4;
+            }
+            return null;
+        }
+
+        if(!self::$trabalhaSabado) {
+            return 8.8;
         }
 
         return 8;
@@ -796,6 +812,9 @@ class Util {
      * @return type
      */
     public static function getSegundosIrComp($ponto) {
+        if(!self::$possuiHEIC) {
+            return 0;
+        }
 
         $segundosNormais = self::getSegundosNormais($ponto);
         
@@ -858,6 +877,14 @@ class Util {
 
         return $segundosTrabalhados - $segundosNormal;
 
+    }
+
+    public static function setPossuiHoraExtraIregularmenteCompensada($possui) {
+        self::$possuiHEIC = $possui;
+    }
+
+    public static function setTrabalhaSabado($trabalhaSabado) { 
+        self::$trabalhaSabado = $trabalhaSabado;
     }
 
 }
