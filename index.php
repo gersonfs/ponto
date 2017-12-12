@@ -1,4 +1,6 @@
-
+<?php
+ini_set('display_errors', 'On');
+?>
 <!DOCTYPE html>
 <!--
 To change this license header, choose License Headers in Project Properties.
@@ -35,6 +37,7 @@ and open the template in the editor.
         $i = 0;
         $mes = 0;
         $semana = 0;
+        $registrosObservacoes = [];
         while ($linha = fgetcsv($f, 0, ';')) {
 
             $possuiDadosNaLinha = false;
@@ -58,8 +61,18 @@ and open the template in the editor.
                 continue;
             }
 
+            $obs = strtolower(trim($linha[2]));
+            if(!empty($obs)) {
+                if(!in_array($obs, Util::getObservacoesTratadas())) {
+                    throw new Exception('A observação ' . $obs . ' não está programada!');
+                }
+
+                $registrosObservacoes[] = $linha;
+            }
+
             $dados[$i] = [
                 'data' => Util::dataBRToISO($linha[1]),
+                'obs' => $obs,
                 'entrada1' => $linha[3],
                 'saida1' => $linha[4],
                 'entrada2' => $linha[5],
@@ -73,6 +86,8 @@ and open the template in the editor.
             }
             $i++;
         }
+
+        Util::setRegistrosObservacoes($registrosObservacoes);
         
         //echo '<pre>' . print_r($dados, true) . '</pre>';
         fclose($f);
@@ -126,7 +141,7 @@ and open the template in the editor.
                     echo '<tr class="'. $dia .'">';
                     echo '<td>' . $dia . '</td>';
                     echo '<td>' . Util::dataISOToBR($dado['data']) . '</td>';
-                    echo '<td>' . Util::getObsData($dado['data']) . '</td>';
+                    echo '<td>' . $dado['obs'] . '</td>';
                     echo '<td>' . $dado['entrada1'] . '</td>';
                     echo '<td>' . $dado['saida1'] . '</td>';
                     echo '<td>' . $dado['entrada2'] . '</td>';

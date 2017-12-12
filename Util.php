@@ -10,6 +10,8 @@ class Util {
 
     private static $trabalhaSabado = true;
 
+    private static $registrosObservacoes = [];
+
     public static function getMeses() {
         return array(
             1 => 'Janeiro',
@@ -94,11 +96,11 @@ class Util {
     }
 
     public static function getFeriados() {
-        return self::getRegistrosData('feriado');
+        return self::getRegistrosData(['feriado', 'licenca r.', 'lic. n. r.', 'liberac.r.']);
     }
 
     public static function getAusencias() {
-        return self::getRegistrosData('ausencia');
+        return self::getRegistrosData(['ausencia', 'falta', 'compens.']);
     }
 
     public static function getAtestados() {
@@ -109,43 +111,33 @@ class Util {
         return self::getRegistrosData('ferias');
     }
 
-    public static function getRegistrosData($tipo) {
+    public static function getRegistrosData($tipos) {
+        if(is_string($tipos)) {
+            $tipos = [$tipos];
+        }
+
+        $strTipos = implode('-', $tipos);
+
         static $registros = [];
-        if(isset($registros[$tipo])) {
-            return $registros[$tipo];
+        if(isset($registros[$strTipos])) {
+            return $registros[$strTipos];
         }
         
-        $linhas = self::getRegistros();
-        $registros[$tipo] = [];
-        $tipo = strtolower($tipo);
-        foreach ($linhas as $linha) {
-            $p = explode("\t", $linha);
-            if (strtolower(trim($p[1])) == $tipo) {
-                $registros[$tipo][] = self::dataBRToISO(trim($p[0]));
+        $linhas = self::getRegistrosObservacoes();
+        $registros[$strTipos] = [];
+        foreach($tipos as $tipo) {
+            $tipo = strtolower($tipo);
+            foreach ($linhas as $linha) {
+                if (strtolower(trim($linha[2])) == $tipo) {
+                    $registros[$strTipos][] = self::dataBRToISO(trim($linha[1]));
+                }
             }
         }
-        return $registros[$tipo];
+        return $registros[$strTipos];
     }
 
-    public static function getObsData($data) {
-        $linhas = self::getRegistros();
-        $data = Util::dataISOToBR($data);
-        foreach ($linhas as $linha) {
-            $p = explode("\t", $linha);
-            if ($p[0] == $data) {
-                return trim($p[1]);
-            }
-        }
-        return '';
-    }
-
-    private static function getRegistros() {
-        static $linhas = null;
-        if($linhas != null) {
-            return $linhas;
-        }
-        $linhas = file('feriados.csv', FILE_IGNORE_NEW_LINES);
-        return $linhas;
+    private static function getRegistrosObservacoes() {
+        return self::$registrosObservacoes;
     }
 
     public static function time_to_sec($time) {
@@ -885,6 +877,14 @@ class Util {
 
     public static function setTrabalhaSabado($trabalhaSabado) { 
         self::$trabalhaSabado = $trabalhaSabado;
+    }
+
+    public static function getObservacoesTratadas() {
+        return ['ferias', 'atestado', 'ausencia', 'feriado', 'falta', 'licenca r.', 'lic. n. r.', 'liberac.r.', 'compens.'];
+    }
+
+    public function setRegistrosObservacoes($registros) {
+        self::$registrosObservacoes = $registros;
     }
 
 }
