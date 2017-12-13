@@ -764,10 +764,9 @@ class Util {
         $horas = 0;
         foreach ($pontos as $ponto2) {
             if ($ponto['semana'] == $ponto2['semana']) {
-                $horas += (int) self::getHorasNormais($ponto2);
+                $horas += self::getHorasNormais($ponto2);
             }
         }
-
         return $horas;
     }
 
@@ -855,7 +854,7 @@ class Util {
         return $diferencaCobrada;
     }
     
-    public static function getHorasExtras($ponto) {
+    public static function getHorasExtras($ponto, $minutosTolerancia = 10) {
         $segundosTrabalhados = self::getSegundosTrabalhados($ponto);
         $segundosNormal = self::getSegundosNormais($ponto);
 
@@ -867,8 +866,13 @@ class Util {
             return;
         }
 
-        return $segundosTrabalhados - $segundosNormal;
+        $diferenca = $segundosTrabalhados - $segundosNormal;
 
+        if($diferenca <= $minutosTolerancia * 60) {
+            return;
+        }
+
+        return $diferenca;
     }
 
     public static function setPossuiHoraExtraIregularmenteCompensada($possui) {
