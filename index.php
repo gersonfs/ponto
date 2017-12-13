@@ -29,10 +29,10 @@ and open the template in the editor.
         <?php
         include('Util.php');
 
-        Util::setPossuiHoraExtraIregularmenteCompensada(false);
-        Util::setTrabalhaSabado(false);
+        Util::setPossuiHoraExtraIregularmenteCompensada(true);
+        Util::setTrabalhaSabado(true);
 
-        $f = fopen('ponto3.csv', 'r');
+        $f = fopen('ponto4.csv', 'r');
         $dados = [];
         $i = 0;
         $mes = 0;
