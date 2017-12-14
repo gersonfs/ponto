@@ -11,6 +11,8 @@ class Util {
     private static $trabalhaSabado = true;
 
     private static $registrosObservacoes = [];
+    
+    private static $jornada;
 
     public static function getMeses() {
         return array(
@@ -141,10 +143,15 @@ class Util {
     }
 
     public static function time_to_sec($time) {
-        $hours = substr($time, 0, -6);
-        $minutes = substr($time, -5, 2);
-        $seconds = substr($time, -2);
-
+        
+        $p = explode(':', $time);
+        $seconds = 0;
+        $hours = $p[0];
+        $minutes = $p[1];
+        if(count($p) === 3) {
+            $seconds = $p[2];
+        }
+        
         return $hours * 3600 + $minutes * 60 + $seconds;
     }
 
@@ -716,6 +723,56 @@ class Util {
 
         return $segundos;
     }
+    
+    public static function getDiferencasPontoEJornada($ponto) {
+        
+        $jornada = self::getJornada($ponto['data']);
+        
+        if(empty($jornada)) {
+            throw new Exception('Não há jornada para a data ' . $ponto['data']);
+        }
+        
+        $diferencas = [];
+        
+        if(!empty($ponto['entrada1'])) {
+            $t1e = self::time_to_sec($ponto['entrada1']);
+            $t1ej = self::time_to_sec($jornada[0][0]);
+            $diferencas[] = $t1ej - $t1e; //Hora de entrada jornada menos hora de entrada
+            
+            $t1s = self::time_to_sec($ponto['saida1']);
+            $t1sj = self::time_to_sec($jornada[0][1]);
+            $diferencas[] = $t1s - $t1sj; //Hora de saída menos hora de saída da jornada
+        }
+        
+        if(!empty($ponto['entrada2'])) {
+            $t2e = self::time_to_sec($ponto['entrada2']);
+            $t2s = self::time_to_sec($ponto['saida2']);
+            
+            //Por exemplo um sabado que ele foi trabalhar de tarde mas so tem jornada de manhã
+            if(!isset($jornada[1])) {
+                $diferencas[] = $t2s - $t2e;
+            }
+            
+            if(isset($jornada[1])) {
+                $t2ej = self::time_to_sec($jornada[1][0]);
+                $diferencas[] = $t2ej - $t2e;
+
+                $t2sj = self::time_to_sec($jornada[1][1]);
+                $diferencas[] = $t2s - $t2sj;
+            }
+        }
+        
+        return $diferencas;
+    }
+    
+    private static function getJornada($data) {
+        $diaSemana = date('w', strtotime($data));
+        if(isset(self::$jornada[$diaSemana])) {
+            return self::$jornada[$diaSemana];
+        }
+        
+        return null;
+    }
 
     public static function getSegundosNormais($ponto) {
         $segundos = self::getHorasNormais($ponto);
@@ -726,12 +783,6 @@ class Util {
     }
 
     public static function getHorasNormais($ponto) {
-        $diaDaSemana = date('w', strtotime($ponto['data']));
-
-        //Domingo
-        if ($diaDaSemana == 0) {
-            return null;
-        }
 
         if (self::isFeriado($ponto['data'])) {
             return null;
@@ -744,20 +795,20 @@ class Util {
         if (self::isAtestado($ponto['data'])) {
             return null;
         }
-
-        //Sabado
-        if ($diaDaSemana == 6) {
-            if(self::$trabalhaSabado) {
-                return 4;
-            }
+        
+        $jornada = self::getJornada($ponto['data']);
+        
+        if(empty($jornada)) {
             return null;
         }
 
-        if(!self::$trabalhaSabado) {
-            return 8.8;
+        $soma = Util::time_to_sec($jornada[0][1]) - Util::time_to_sec($jornada[0][0]);
+
+        if(isset($jornada[1])) {
+            $soma += Util::time_to_sec($jornada[1][1]) - Util::time_to_sec($jornada[1][0]);
         }
 
-        return 8;
+        return $soma / 60 / 60;
     }
 
     public static function getHorasNormalSemana($ponto, $pontos) {
@@ -866,13 +917,37 @@ class Util {
             return;
         }
 
-        $diferenca = $segundosTrabalhados - $segundosNormal;
-
-        if($diferenca <= $minutosTolerancia * 60) {
+        $jornada = self::getJornada($ponto['data']);
+        if(empty($jornada)) {
+            return $segundosTrabalhados;
+        }
+        
+        
+        $diferencas = self::getDiferencasPontoEJornada($ponto);
+        
+        $possuiDiferencaMaiorQue5Minutos = false;
+        foreach($diferencas as $diferenca) {
+            if($diferenca > 5 * 60) {
+                $possuiDiferencaMaiorQue5Minutos = true;
+            }
+        }
+        
+        $soma = array_sum($diferencas);
+        
+        if($soma < 0) {
+            return;
+        }
+        
+        if($possuiDiferencaMaiorQue5Minutos) {
+            return $soma;
+        }
+        
+        $somaMenorQueDezMinutos = $soma <= 10 * 60;
+        if($somaMenorQueDezMinutos) {
             return;
         }
 
-        return $diferenca;
+        return $soma;
     }
 
     public static function setPossuiHoraExtraIregularmenteCompensada($possui) {
@@ -889,6 +964,10 @@ class Util {
 
     public function setRegistrosObservacoes($registros) {
         self::$registrosObservacoes = $registros;
+    }
+    
+    public static function setJornadaTrabalho(array $jornada) {
+        self::$jornada = $jornada;
     }
 
 }

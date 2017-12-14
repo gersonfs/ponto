@@ -86,11 +86,63 @@ and open the template in the editor.
             }
             $i++;
         }
+        fclose($f);
 
         Util::setRegistrosObservacoes($registrosObservacoes);
         
+        //1 é segunda
+        /*Util::setJornadaTrabalho([
+            1 => [
+                ['07:15', '12:00'],
+                ['13:00', '17:03'],
+            ],
+            2 => [
+                ['07:15', '12:00'],
+                ['13:00', '17:03'],
+            ],
+            3 => [
+                ['07:15', '12:00'],
+                ['13:00', '17:03'],
+            ],
+            4 => [
+                ['07:15', '12:00'],
+                ['13:00', '17:03'],
+            ],
+            5 => [
+                ['07:15', '12:00'],
+                ['13:00', '17:03'],
+            ],
+        ]);*/
+        
+        Util::setJornadaTrabalho([
+            1 => [
+                ['07:15', '12:00'],
+                ['13:00', '16:15'],
+            ],
+            2 => [
+                ['07:15', '12:00'],
+                ['13:00', '16:15'],
+            ],
+            3 => [
+                ['07:15', '12:00'],
+                ['13:00', '16:15'],
+            ],
+            4 => [
+                ['07:15', '12:00'],
+                ['13:00', '16:15'],
+            ],
+            5 => [
+                ['07:15', '12:00'],
+                ['13:00', '16:15'],
+            ],
+            6 => [
+                ['08:00', '12:00'],
+            ],
+        ]);
+        
+        
         //echo '<pre>' . print_r($dados, true) . '</pre>';
-        fclose($f);
+        
         ?>
         <pre>
         <table style="width: 80%">
@@ -137,6 +189,9 @@ and open the template in the editor.
                     $sHE += $he;
                     $sHIC += $ic;
                     $heHic = $he - $ic;
+                    if($heHic < 0) {
+                        $heHic = 0;
+                    }
                     $totalHEMenosHIC += $heHic;
                     echo '<tr class="'. $dia .'">';
                     echo '<td>' . $dia . '</td>';
