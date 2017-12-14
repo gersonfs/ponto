@@ -718,49 +718,73 @@ class Util {
 
             $segundos += $t2->getTimestamp() - $t1->getTimestamp();
         }
+        
+        if (strlen($ponto['entrada3'])) {
+            $t1 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['entrada3']);
+            $t2 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['saida3']);
+            $segundos += $t2->getTimestamp() - $t1->getTimestamp();
+        }
+        
+        if (strlen($ponto['entrada4'])) {
+            $t1 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['entrada4']);
+            $t2 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['saida4']);
+            $segundos += $t2->getTimestamp() - $t1->getTimestamp();
+        }
 
         return $segundos;
     }
     
-    public static function getDiferencasPontoEJornada($ponto) {
+    public static function possuiDiferencaMaior5Min($ponto) {
         
         $jornada = self::getJornada($ponto['data']);
-        
         if(empty($jornada)) {
             throw new Exception('Não há jornada para a data ' . $ponto['data']);
         }
         
-        $diferencas = [];
         
-        if(!empty($ponto['entrada1'])) {
-            $t1e = self::time_to_sec($ponto['entrada1']);
-            $t1ej = self::time_to_sec($jornada[0][0]);
-            $diferencas[] = $t1ej - $t1e; //Hora de entrada jornada menos hora de entrada
-            
-            $t1s = self::time_to_sec($ponto['saida1']);
-            $t1sj = self::time_to_sec($jornada[0][1]);
-            $diferencas[] = $t1s - $t1sj; //Hora de saída menos hora de saída da jornada
+        $horasEntradasJornada = [];
+        foreach($jornada as $periodo) {
+            $horasEntradasJornada[] = $periodo[0];
         }
         
-        if(!empty($ponto['entrada2'])) {
-            $t2e = self::time_to_sec($ponto['entrada2']);
-            $t2s = self::time_to_sec($ponto['saida2']);
+        for($i = 1; $i <= 4; $i++) {
+            $horaEntrada = $ponto['entrada' . $i];
             
-            //Por exemplo um sabado que ele foi trabalhar de tarde mas so tem jornada de manhã
-            if(!isset($jornada[1])) {
-                $diferencas[] = $t2s - $t2e;
+            if(empty($horaEntrada)) {
+                break;
             }
             
-            if(isset($jornada[1])) {
-                $t2ej = self::time_to_sec($jornada[1][0]);
-                $diferencas[] = $t2ej - $t2e;
-
-                $t2sj = self::time_to_sec($jornada[1][1]);
-                $diferencas[] = $t2s - $t2sj;
+            $k = 0;
+            $menorHoraJornada = null;
+            $menorDiferenca = null;
+            foreach($horasEntradasJornada as $horaEntradaJornada) {
+                
+                if($k == 0) {
+                    $menorHoraJornada = $horaEntradaJornada;
+                    $menorDiferenca = abs(Util::time_to_sec($horaEntrada) - Util::time_to_sec($horaEntradaJornada));
+                }
+                
+                $diferenca = abs(Util::time_to_sec($horaEntrada) - Util::time_to_sec($horaEntradaJornada));
+                
+                if($diferenca < $menorDiferenca) {
+                    $menorDiferenca = $diferenca;
+                    $menorHoraJornada = $horaEntradaJornada;
+                }
+                $k++;
+            }
+            
+            $diferenca = Util::time_to_sec($menorHoraJornada) - Util::time_to_sec($horaEntrada);
+            
+            if($diferenca < 0) {
+                continue;
+            }
+            
+            if($diferenca > 5 * 60) {
+                return true;
             }
         }
         
-        return $diferencas;
+        return false;
     }
     
     private static function getJornada($data) {
@@ -903,7 +927,7 @@ class Util {
         return $diferencaCobrada;
     }
     
-    public static function getHorasExtras($ponto, $minutosTolerancia = 10) {
+    public static function getHorasExtras($ponto) {
         $segundosTrabalhados = self::getSegundosTrabalhados($ponto);
         $segundosNormal = self::getSegundosNormais($ponto);
 
@@ -921,20 +945,9 @@ class Util {
         }
         
         
-        $diferencas = self::getDiferencasPontoEJornada($ponto);
+        $possuiDiferencaMaiorQue5Minutos = self::possuiDiferencaMaior5Min($ponto);
         
-        $possuiDiferencaMaiorQue5Minutos = false;
-        foreach($diferencas as $diferenca) {
-            if($diferenca > 5 * 60) {
-                $possuiDiferencaMaiorQue5Minutos = true;
-            }
-        }
-        
-        $soma = array_sum($diferencas);
-        
-        if($soma < 0) {
-            return;
-        }
+        $soma = $segundosTrabalhados - $segundosNormal;
         
         if($possuiDiferencaMaiorQue5Minutos) {
             return $soma;

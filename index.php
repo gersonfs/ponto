@@ -29,9 +29,9 @@ and open the template in the editor.
         <?php
         include('Util.php');
 
-        Util::setPossuiHoraExtraIregularmenteCompensada(false);
+        Util::setPossuiHoraExtraIregularmenteCompensada(true);
 
-        $f = fopen('ponto3.csv', 'r');
+        $f = fopen('ponto4.csv', 'r');
         $dados = [];
         $i = 0;
         $mes = 0;
@@ -76,6 +76,10 @@ and open the template in the editor.
                 'saida1' => $linha[4],
                 'entrada2' => $linha[5],
                 'saida2' => $linha[6],
+                'entrada3' => $linha[7],
+                'saida3' => $linha[8],
+                'entrada4' => $linha[9],
+                'saida4' => $linha[10],
                 'mes' => $mes,
                 'semana' => $semana
             ];
@@ -115,7 +119,7 @@ and open the template in the editor.
             ],
         ]);
 
-        Util::setJornadaTrabalho([
+        /*Util::setJornadaTrabalho([
             1 => [
                 ['07:15', '12:00'],
                 ['13:00', '17:15'],
@@ -136,7 +140,7 @@ and open the template in the editor.
                 ['07:15', '12:00'],
                 ['13:00', '16:15'],
             ],
-        ]);
+        ]);*/
         
         
         //echo '<pre>' . print_r($dados, true) . '</pre>';
@@ -148,6 +152,10 @@ and open the template in the editor.
                 <td>Dia</td>
                 <td>Data</td>
                 <td>Obs</td>
+                <td>Entrada</td>
+                <td>Saida</td>
+                <td>Entrada</td>
+                <td>Saida</td>
                 <td>Entrada</td>
                 <td>Saida</td>
                 <td>Entrada</td>
@@ -164,7 +172,7 @@ and open the template in the editor.
                 <td>H. E. 130%.</td>
             </tr>
                 <?php
-                $totalHEMenosHIC = $totalHTMes = $totalHNMes = $tSegundosNormais = $tSegundosTrabalhados = $sHE = $sHIC = 0;
+                $totalHEMenosHIC = $totalHTMes = $totalHNMes = $tSegundosNormais = $tSegundosTrabalhados = $sHE = $sHIC = $sH100 = 0;
                 $totaisMeses = [];
                 foreach ($dados as $i=>$dado) {
                     $dia = Util::getDiaDaSemanaCurto($dado['data']);
@@ -190,6 +198,14 @@ and open the template in the editor.
                     if($heHic < 0) {
                         $heHic = 0;
                     }
+                    
+                    $he100 = null;
+                    if((Util::isDomingo($dado) || Util::isFeriado($dado['data'])) && $heHic > 0) {
+                        $he100 = $heHic;
+                        $sH100 += $he100;
+                        $heHic = 0;
+                    }
+                    
                     $totalHEMenosHIC += $heHic;
                     echo '<tr class="'. $dia .'">';
                     echo '<td>' . $dia . '</td>';
@@ -199,6 +215,10 @@ and open the template in the editor.
                     echo '<td>' . $dado['saida1'] . '</td>';
                     echo '<td>' . $dado['entrada2'] . '</td>';
                     echo '<td>' . $dado['saida2'] . '</td>';
+                    echo '<td>' . $dado['entrada3'] . '</td>';
+                    echo '<td>' . $dado['saida3'] . '</td>';
+                    echo '<td>' . $dado['entrada4'] . '</td>';
+                    echo '<td>' . $dado['saida4'] . '</td>';
                     echo '<td>' . Util::sec_to_time($segundosNormais) . '</td>';
                     echo '<td>' . Util::sec_to_time($segundosTrabalhados) . '</td>';
                     echo '<td>' . Util::sec_to_time($he) . '</td>';
@@ -207,16 +227,18 @@ and open the template in the editor.
                     echo '<td>' . Util::sec_to_time($s1) . '</td>';
                     echo '<td>' . Util::sec_to_time($s2) . '</td>';
                     echo '<td></td>';
-                    echo '<td></td>';
+                    echo '<td>'. Util::sec_to_time($he100) .'</td>';
                     echo '<td></td>';
                     echo '</tr>';
                     
                     if(isset($dado['is_fechamento'])) {
 
                         $h50 = $totalHEMenosHIC;
+                        $h100 = $sH100;
+                        
                         if($h50 > (22 * 60 * 60)) {
                             $h50 = 22 * 60 * 60;
-                            $h100 = $totalHEMenosHIC - $h50;
+                            $h100 = $sH100 + ($totalHEMenosHIC - $h50);
                             if($h100 > (38 * 60 * 60)) {
                                 $h100 = 38 * 60 * 60;
                                 $h130 = $totalHEMenosHIC - $h50 - $h100;
@@ -242,6 +264,10 @@ and open the template in the editor.
                         echo '<td></td>';
                         echo '<td></td>';
                         echo '<td></td>';
+                        echo '<td></td>';
+                        echo '<td></td>';
+                        echo '<td></td>';
+                        echo '<td></td>';
                         echo '<td>' . Util::sec_to_time($tSegundosNormais)  . '</td>';
                         echo '<td>' . Util::sec_to_time($tSegundosTrabalhados)  . '</td>';
                         echo '<td>' . Util::sec_to_time($sHE) .'</td>';
@@ -257,7 +283,7 @@ and open the template in the editor.
                         echo '<td colspan="14"> </td>';
                         echo '</tr>';
                         
-                        $totalHEMenosHIC = $sHIC = $sHE = $tSegundosNormais = $totalHNMes = $totalHTMes = $tSegundosTrabalhados = 0;
+                        $totalHEMenosHIC = $sH100 = $sHIC = $sHE = $tSegundosNormais = $totalHNMes = $totalHTMes = $tSegundosTrabalhados = 0;
                     }
                 }
                 ?>
@@ -278,7 +304,17 @@ and open the template in the editor.
                 <td>H 130%</td>
             </tr>
             <?php 
+            $somaNormal = $somaTrabalhada =  $somaHe = $somaHic = $somaHeHic = $somaH50 = $somaH100 = $somaH130 = 0;
             foreach($totaisMeses as $total) {
+                $somaNormal += $total['normal'];
+                $somaTrabalhada += $total['trabalhado'];
+                $somaHe += $total['he'];
+                $somaHic += $total['hic'];
+                $somaHeHic += $total['he-hic'];
+                $somaH50 += $total['h50'];
+                $somaH100 += $total['h100'];
+                $somaH130 += $total['h130'];
+                
                 echo '<tr>';
                 echo '<td>'. date('m/Y', strtotime($total['periodo'])) .'</td>';
                 echo '<td>' . number_format($total['normal']/60/60, 2, ",", "") . '</td>';
@@ -292,6 +328,22 @@ and open the template in the editor.
                 echo '</tr>';
             }
             ?>
+            <tfoot>
+                <tr>
+                    <td>Soma</td>
+                    <?php
+                    echo '<td>' . number_format($somaNormal/60/60, 2, ",", "") . '</td>';
+                    echo '<td>' . number_format($somaTrabalhada/60/60, 2, ",", "") . '</td>';
+                    echo '<td>' . number_format($somaHe/60/60, 2, ",", "") . '</td>';
+                    echo '<td>' . number_format($somaHic/60/60, 2, ",", "") . '</td>';
+                    echo '<td>' . number_format($somaHeHic/60/60, 2, ",", "") . '</td>';
+                    echo '<td>' . number_format($somaH50/60/60, 2, ",", "") . '</td>';
+                    echo '<td>' . number_format($somaH100/60/60, 2, ",", "") . '</td>';
+                    echo '<td>' . number_format($somaH130/60/60, 2, ",", "") . '</td>';
+                    
+                    ?>
+                </tr>
+            </tfoot>
         </table>
 
 
