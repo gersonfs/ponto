@@ -29,10 +29,9 @@ and open the template in the editor.
         <?php
         include('Util.php');
 
-        Util::setPossuiHoraExtraIregularmenteCompensada(true);
-        Util::setTrabalhaSabado(true);
+        Util::setPossuiHoraExtraIregularmenteCompensada(false);
 
-        $f = fopen('ponto4.csv', 'r');
+        $f = fopen('ponto3.csv', 'r');
         $dados = [];
         $i = 0;
         $mes = 0;
@@ -90,30 +89,6 @@ and open the template in the editor.
 
         Util::setRegistrosObservacoes($registrosObservacoes);
         
-        //1 é segunda
-        /*Util::setJornadaTrabalho([
-            1 => [
-                ['07:15', '12:00'],
-                ['13:00', '17:03'],
-            ],
-            2 => [
-                ['07:15', '12:00'],
-                ['13:00', '17:03'],
-            ],
-            3 => [
-                ['07:15', '12:00'],
-                ['13:00', '17:03'],
-            ],
-            4 => [
-                ['07:15', '12:00'],
-                ['13:00', '17:03'],
-            ],
-            5 => [
-                ['07:15', '12:00'],
-                ['13:00', '17:03'],
-            ],
-        ]);*/
-        
         Util::setJornadaTrabalho([
             1 => [
                 ['07:15', '12:00'],
@@ -137,6 +112,29 @@ and open the template in the editor.
             ],
             6 => [
                 ['08:00', '12:00'],
+            ],
+        ]);
+
+        Util::setJornadaTrabalho([
+            1 => [
+                ['07:15', '12:00'],
+                ['13:00', '17:15'],
+            ],
+            2 => [
+                ['07:15', '12:00'],
+                ['13:00', '17:15'],
+            ],
+            3 => [
+                ['07:15', '12:00'],
+                ['13:00', '17:15'],
+            ],
+            4 => [
+                ['07:15', '12:00'],
+                ['13:00', '17:15'],
+            ],
+            5 => [
+                ['07:15', '12:00'],
+                ['13:00', '16:15'],
             ],
         ]);
         

@@ -8,8 +8,6 @@ class Util {
      */
     private static $possuiHEIC = true;
 
-    private static $trabalhaSabado = true;
-
     private static $registrosObservacoes = [];
     
     private static $jornada;
@@ -952,10 +950,6 @@ class Util {
 
     public static function setPossuiHoraExtraIregularmenteCompensada($possui) {
         self::$possuiHEIC = $possui;
-    }
-
-    public static function setTrabalhaSabado($trabalhaSabado) { 
-        self::$trabalhaSabado = $trabalhaSabado;
     }
 
     public static function getObservacoesTratadas() {
