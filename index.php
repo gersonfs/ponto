@@ -29,9 +29,9 @@ and open the template in the editor.
         <?php
         include('Util.php');
 
-        Util::setPossuiHoraExtraIregularmenteCompensada(true);
+        Util::setPossuiHoraExtraIregularmenteCompensada(false);
 
-        $f = fopen('ponto4.csv', 'r');
+        $f = fopen('ponto3.csv', 'r');
         $dados = [];
         $i = 0;
         $mes = 0;
@@ -93,7 +93,7 @@ and open the template in the editor.
 
         Util::setRegistrosObservacoes($registrosObservacoes);
         
-        Util::setJornadaTrabalho([
+        /*Util::setJornadaTrabalho([
             1 => [
                 ['07:15', '12:00'],
                 ['13:00', '16:15'],
@@ -117,9 +117,9 @@ and open the template in the editor.
             6 => [
                 ['08:00', '12:00'],
             ],
-        ]);
+        ]);*/
 
-        /*Util::setJornadaTrabalho([
+        Util::setJornadaTrabalho([
             1 => [
                 ['07:15', '12:00'],
                 ['13:00', '17:15'],
@@ -140,7 +140,7 @@ and open the template in the editor.
                 ['07:15', '12:00'],
                 ['13:00', '16:15'],
             ],
-        ]);*/
+        ]);
         
         
         //echo '<pre>' . print_r($dados, true) . '</pre>';
@@ -359,7 +359,22 @@ and open the template in the editor.
                 </tr>
             </tfoot>
         </table>
-
+        
+        <p>Jornada:</p>
+        <?php
+            $jornada = Util::getJornadas();
+            foreach($jornada as $diaSemana=>$pontos) {
+                echo '<p>';
+                echo Util::getDiaDaSemanaCurto($diaSemana);
+                echo ' ';
+                $str = [];
+                foreach($pontos as $ponto) {
+                    $str [] = $ponto[0] . ' - ' . $ponto[1];
+                }
+                echo implode(', ', $str);
+                echo '</p>';
+            }
+        ?>
 
         </pre>
     </body>

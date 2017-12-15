@@ -75,7 +75,13 @@ class Util {
         if (!strlen($data)) {
             return '';
         }
+        
         $dias = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+        
+        if(preg_match("/^\d+$/", $data)) {
+            return $dias[$data];
+        }
+        
         return $dias[date('w', strtotime($data))];
     }
 
@@ -777,7 +783,7 @@ class Util {
                 $k++;
             }
             
-            $diferenca = Util::time_to_sec($menorHoraJornada) - Util::time_to_sec($horaEntrada);
+            $diferenca = Util::time_to_sec($horaEntrada) - Util::time_to_sec($menorHoraJornada);
             
             if($diferenca < 0) {
                 continue;
@@ -946,7 +952,6 @@ class Util {
             return $segundosTrabalhados;
         }
         
-        
         $possuiDiferencaMaiorQue5Minutos = self::possuiDiferencaMaior5Min($ponto);
         
         $soma = $segundosTrabalhados - $segundosNormal;
@@ -1027,6 +1032,10 @@ class Util {
         }
         
         return $segundos;
+    }
+    
+    public static function getJornadas() {
+        return self::$jornada;
     }
 
 }
