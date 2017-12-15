@@ -142,6 +142,10 @@ class Util {
 
     public static function time_to_sec($time) {
         
+        if($time === null) {
+            return null;
+        }
+        
         $p = explode(':', $time);
         $seconds = 0;
         $hours = $p[0];
@@ -975,6 +979,56 @@ class Util {
     
     public static function setJornadaTrabalho(array $jornada) {
         self::$jornada = $jornada;
+    }
+    
+    public static function getSegundosConvertidosHoraNoturna($ponto) {
+        
+        $segundos = self::getSegundosNoturno($ponto);
+        if($segundos === 0) {
+            return null;
+        }
+        $segundosAcima22Horas = $segundos;
+        $segundosUmaHoraNoturna = 52.5 * 60;
+        
+        //Convertendo para segundos, pois o resultado da divisao gera um fator em hora
+        return ($segundosAcima22Horas / $segundosUmaHoraNoturna) * 60 * 60;
+    }
+    
+    public static function getSegundosNoturno($ponto) {
+        
+        $dataEntrada = DateTime::createFromFormat('Y-m-d H:i', $ponto['data'] . ' 22:00');
+        $diaSeguinte = date('Y-m-d', strtotime('+1 day', strtotime($ponto['data'])));
+        $dataSaida = DateTime::createFromFormat('Y-m-d H:i', $diaSeguinte . ' 05:00');
+        
+        $segundos = 0;
+        for($i = 1; $i <= 4; $i++) {
+            $entrada = $ponto['entrada' . $i];
+            $saida = $ponto['saida' . $i];
+            
+            if(empty($entrada)) {
+                continue;
+            }
+            
+            $diaSaida = $ponto['data'];
+            if(Util::time_to_sec($saida) < Util::sec_to_time($entrada)) {
+                $diaSaida = date('Y-m-d', strtotime('+1 day', strtotime($diaSaida)));
+            }
+            
+            $dEntrada =  DateTime::createFromFormat('Y-m-d H:i', $ponto['data'] . ' ' . $entrada);
+            $dSaida =  DateTime::createFromFormat('Y-m-d H:i', $diaSaida . ' ' . $saida);
+            
+            if($dSaida > $dataEntrada && $dEntrada < $dataSaida) {
+                $t1 = $dEntrada;
+                while($t1 < $dataSaida && $t1 <= $dSaida) {
+                    if($t1 > $dataEntrada) {
+                        $segundos++;
+                    }
+                    $t1->modify('+1 second');
+                }
+            }
+        }
+        
+        return $segundos;
     }
 
 }

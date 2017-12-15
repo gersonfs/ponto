@@ -170,9 +170,10 @@ and open the template in the editor.
                 <td>H. E. 50%.</td>
                 <td>H. E. 100%.</td>
                 <td>H. E. 130%.</td>
+                <td>H.N.</td>
             </tr>
                 <?php
-                $totalHEMenosHIC = $totalHTMes = $totalHNMes = $tSegundosNormais = $tSegundosTrabalhados = $sHE = $sHIC = $sH100 = 0;
+                $totalHEMenosHIC = $totalHTMes = $totalHNMes = $tSegundosNormais = $tSegundosTrabalhados = $sHE = $sHIC = $sH100 = $sHN = 0;
                 $totaisMeses = [];
                 foreach ($dados as $i=>$dado) {
                     $dia = Util::getDiaDaSemanaCurto($dado['data']);
@@ -206,6 +207,10 @@ and open the template in the editor.
                         $heHic = 0;
                     }
                     
+                    $hn = Util::getSegundosConvertidosHoraNoturna($dado);
+                    if(!empty($hn)) {
+                        $sHN += $hn;
+                    }
                     $totalHEMenosHIC += $heHic;
                     echo '<tr class="'. $dia .'">';
                     echo '<td>' . $dia . '</td>';
@@ -229,6 +234,7 @@ and open the template in the editor.
                     echo '<td></td>';
                     echo '<td>'. Util::sec_to_time($he100) .'</td>';
                     echo '<td></td>';
+                    echo '<td>'. Util::sec_to_time($hn) .'</td>';
                     echo '</tr>';
                     
                     if(isset($dado['is_fechamento'])) {
@@ -255,6 +261,7 @@ and open the template in the editor.
                             'h50' => $h50,
                             'h100' => $h100,
                             'h130' => $h130,
+                            'hn' => $sHN
                         ];
 
                         echo '<tr>';
@@ -278,12 +285,13 @@ and open the template in the editor.
                         echo '<td>' . Util::sec_to_time($h50) . '</td>';
                         echo '<td>' . Util::sec_to_time($h100) . '</td>';
                         echo '<td>' . Util::sec_to_time($h130) . '</td>';
+                        echo '<td>' . Util::sec_to_time($sHN) . '</td>';
                         echo '</tr>';
                         echo '<tr>';
                         echo '<td colspan="14"> </td>';
                         echo '</tr>';
                         
-                        $totalHEMenosHIC = $sH100 = $sHIC = $sHE = $tSegundosNormais = $totalHNMes = $totalHTMes = $tSegundosTrabalhados = 0;
+                        $totalHEMenosHIC = $sH100 = $sHIC = $sHE = $tSegundosNormais = $totalHNMes = $totalHTMes = $tSegundosTrabalhados = $sHN = 0;
                     }
                 }
                 ?>
@@ -302,6 +310,7 @@ and open the template in the editor.
                 <td>H 50%</td>
                 <td>H 100%</td>
                 <td>H 130%</td>
+                <td>H N</td>
             </tr>
             <?php 
             $somaNormal = $somaTrabalhada =  $somaHe = $somaHic = $somaHeHic = $somaH50 = $somaH100 = $somaH130 = 0;
@@ -325,6 +334,7 @@ and open the template in the editor.
                 echo '<td>' . number_format($total['h50']/60/60, 2, ",", "") . '</td>';
                 echo '<td>' . number_format($total['h100']/60/60, 2, ",", "") . '</td>';
                 echo '<td>' . number_format($total['h130']/60/60, 2, ",", "") . '</td>';
+                echo '<td>' . number_format($total['hn']/60/60, 2, ",", "") . '</td>';
                 echo '</tr>';
             }
             ?>
