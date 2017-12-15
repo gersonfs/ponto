@@ -204,7 +204,6 @@ and open the template in the editor.
                     if((Util::isDomingo($dado) || Util::isFeriado($dado['data'])) && $heHic > 0) {
                         $he100 = $heHic;
                         $sH100 += $he100;
-                        $heHic = 0;
                     }
                     
                     $hn = Util::getSegundosConvertidosHoraNoturna($dado);
@@ -239,7 +238,11 @@ and open the template in the editor.
                     
                     if(isset($dado['is_fechamento'])) {
 
-                        $h50 = $totalHEMenosHIC;
+                        $h50 = $totalHEMenosHIC - $sH100;
+                        if($h50 < 0) {
+                            $h50 = 0;
+                        }
+                        
                         $h100 = $sH100;
                         
                         if($h50 > (22 * 60 * 60)) {
@@ -313,7 +316,7 @@ and open the template in the editor.
                 <td>H N</td>
             </tr>
             <?php 
-            $somaNormal = $somaTrabalhada =  $somaHe = $somaHic = $somaHeHic = $somaH50 = $somaH100 = $somaH130 = 0;
+            $somaNormal = $somaTrabalhada = $somaHe = $somaHic = $somaHeHic = $somaH50 = $somaH100 = $somaH130 = $somaHN = 0;
             foreach($totaisMeses as $total) {
                 $somaNormal += $total['normal'];
                 $somaTrabalhada += $total['trabalhado'];
@@ -323,6 +326,7 @@ and open the template in the editor.
                 $somaH50 += $total['h50'];
                 $somaH100 += $total['h100'];
                 $somaH130 += $total['h130'];
+                $somaHN += $total['hn'];
                 
                 echo '<tr>';
                 echo '<td>'. date('m/Y', strtotime($total['periodo'])) .'</td>';
@@ -350,7 +354,7 @@ and open the template in the editor.
                     echo '<td>' . number_format($somaH50/60/60, 2, ",", "") . '</td>';
                     echo '<td>' . number_format($somaH100/60/60, 2, ",", "") . '</td>';
                     echo '<td>' . number_format($somaH130/60/60, 2, ",", "") . '</td>';
-                    
+                    echo '<td>' . number_format($somaHN/60/60, 2, ",", "") . '</td>';
                     ?>
                 </tr>
             </tfoot>

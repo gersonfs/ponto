@@ -890,20 +890,18 @@ class Util {
             return;
         }
             
-        $segundosTrabalhados = self::getSegundosTrabalhados($ponto);
-
-        if ($segundosTrabalhados <= $segundosNormais) {
-            return 0;
-        }
-
         if(self::isSabado($ponto)) {
             return 0;
         }
-
-        $diferenca = $segundosTrabalhados - $segundosNormais;
-
-        if ($diferenca < (48 * 60)) {
-            return $diferenca;
+        
+        $horaExtra = self::getHorasExtras($ponto);
+        
+        if(empty($horaExtra)) {
+            return 0;
+        }
+        
+        if ($horaExtra < (48 * 60)) {
+            return $horaExtra;
         }
 
         return 48 * 60;
