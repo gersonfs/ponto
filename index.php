@@ -266,11 +266,11 @@ and open the template in the editor.
                     echo '<td>' . $dado['saida3'] . '</td>';
                     echo '<td>' . $dado['entrada4'] . '</td>';
                     echo '<td>' . $dado['saida4'] . '</td>';
-                    echo '<td>' . Util::sec_to_time($segundosNormais) . '</td>';
-                    echo '<td>' . Util::sec_to_time($segundosTrabalhados) . '</td>';
-                    echo '<td>' . Util::sec_to_time($he) . '</td>';
-                    echo '<td>' . Util::sec_to_time($ic) . '</td>';
-                    echo '<td>' . Util::sec_to_time($heHic) . '</td>';
+                    echo '<td title="Hora Normal">' . Util::sec_to_time($segundosNormais) . '</td>';
+                    echo '<td title="Hora Trabalhada">' . Util::sec_to_time($segundosTrabalhados) . '</td>';
+                    echo '<td title="Hora Extra">' . Util::sec_to_time($he) . '</td>';
+                    echo '<td title="Hora Irregularmente Compensada">' . Util::sec_to_time($ic) . '</td>';
+                    echo '<td title="Hora Extra - Hora Irregularmente Compensada">' . Util::sec_to_time($heHic) . '</td>';
                     echo '<td>' . Util::sec_to_time($s1) . '</td>';
                     echo '<td>' . Util::sec_to_time($s2) . '</td>';
                     echo '<td></td>';
