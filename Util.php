@@ -10,7 +10,7 @@ class Util {
 
     private static $registrosObservacoes = [];
     
-    private static $jornada;
+    private static $jornadas;
 
     public static function getMeses() {
         return array(
@@ -182,9 +182,15 @@ class Util {
         if (!strlen($data)) {
             return '';
         }
-
+        
         $p = explode(' ', $data);
         $data = $p[0];
+        if(self::isDataISO($data)) {
+            if(isset($p[1])) {
+                return $data . ' ' . $p[1];
+            }
+            return $data;
+        }
         list($dia, $mes, $ano) = explode('/', $data);
         $retorno = sprintf('%d-%02d-%02d', $ano, $mes, $dia);
         if (isset($p[1])) {
@@ -798,11 +804,20 @@ class Util {
     }
     
     private static function getJornada($data) {
-        $diaSemana = date('w', strtotime($data));
-        if(isset(self::$jornada[$diaSemana])) {
-            return self::$jornada[$diaSemana];
+        $timeData = strtotime($data);
+        $diaSemana = date('w', $timeData);
+        foreach(self::$jornadas as $jornada) {
+            $timeInicioJornada = strtotime($jornada['inicio']);
+            $timeFimJornada = strtotime($jornada['fim']);
+            $pertenceJornada = $timeData >= $timeInicioJornada && $timeData <= $timeFimJornada;
+            if(!$pertenceJornada) {
+                continue;
+            }
+            
+            if(isset($jornada['jornada'][$diaSemana])) {
+                return $jornada['jornada'][$diaSemana];
+            }
         }
-        
         return null;
     }
 
@@ -976,12 +991,12 @@ class Util {
         return ['ferias', 'atestado', 'ausencia', 'feriado', 'falta', 'licenca r.', 'lic. n. r.', 'liberac.r.', 'compens.'];
     }
 
-    public function setRegistrosObservacoes($registros) {
+    public static function setRegistrosObservacoes($registros) {
         self::$registrosObservacoes = $registros;
     }
     
-    public static function setJornadaTrabalho(array $jornada) {
-        self::$jornada = $jornada;
+    public static function addJornadaTrabalho(array $jornada, $dataInicio, $dataFim) {
+        self::$jornadas[] = ['jornada' => $jornada, 'inicio' => self::dataBRToISO($dataInicio), 'fim' => self::dataBRToISO($dataFim)];
     }
     
     public static function getSegundosConvertidosHoraNoturna($ponto) {
@@ -1013,7 +1028,7 @@ class Util {
             }
             
             $diaSaida = $ponto['data'];
-            if(Util::time_to_sec($saida) < Util::sec_to_time($entrada)) {
+            if(Util::time_to_sec($saida) < Util::time_to_sec($entrada)) {
                 $diaSaida = date('Y-m-d', strtotime('+1 day', strtotime($diaSaida)));
             }
             
@@ -1035,7 +1050,7 @@ class Util {
     }
     
     public static function getJornadas() {
-        return self::$jornada;
+        return self::$jornadas;
     }
 
 }

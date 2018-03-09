@@ -154,7 +154,7 @@ and open the template in the editor.
             ],
         ]);*/
         
-        Util::setJornadaTrabalho([
+        Util::addJornadaTrabalho([
             1 => [
                 ['07:30', '12:30'],
                 ['13:00', '16:00'],
@@ -178,7 +178,7 @@ and open the template in the editor.
             6 => [
                 ['07:15', '11:15'],
             ],
-        ]);
+        ], '05/03/2014', '12/06/2016');
         
         //echo '<pre>' . print_r($dados, true) . '</pre>';
         
@@ -412,17 +412,22 @@ and open the template in the editor.
         
         <p>Jornada:</p>
         <?php
-            $jornada = Util::getJornadas();
-            foreach($jornada as $diaSemana=>$pontos) {
-                echo '<p>';
-                echo Util::getDiaDaSemanaCurto($diaSemana);
-                echo ' ';
-                $str = [];
-                foreach($pontos as $ponto) {
-                    $str [] = $ponto[0] . ' - ' . $ponto[1];
+            $jornadas = Util::getJornadas();
+            foreach($jornadas as $jornada) {
+                echo 'Início: ' . date("d/m/Y", strtotime($jornada['inicio']));
+                echo ' Fim: ' . date("d/m/Y", strtotime($jornada['inicio']));
+                echo '<br />';
+                foreach($jornada['jornada'] as $diaSemana=>$pontos) {
+                    echo '<p>';
+                    echo Util::getDiaDaSemanaCurto($diaSemana);
+                    echo ' ';
+                    $str = [];
+                    foreach($pontos as $ponto) {
+                        $str [] = $ponto[0] . ' - ' . $ponto[1];
+                    }
+                    echo implode(', ', $str);
+                    echo '</p>';
                 }
-                echo implode(', ', $str);
-                echo '</p>';
             }
         ?>
 
