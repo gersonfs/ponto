@@ -14,6 +14,7 @@
         <td>Início</td>
         <td>Fim</td>
         <td>Soma</td>
+        <td>A4H</td>
     </tr>
 <?php
 include '../Util.php';
@@ -24,6 +25,8 @@ $registros = $ponto->getRegistros();
 $dias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 $somaMes = 0;
 $totais = [];
+$somaMeses = [];
+$somaSobras = 0;
 foreach($registros as $i => $registro) {
     echo '<tr>';
     echo '<td>'. $dias[date('w', strtotime($registro['data']))] .'</td>';
@@ -46,6 +49,15 @@ foreach($registros as $i => $registro) {
     
     echo '<td>'. ($soma > 0 ? Util::sec_to_time($soma) : '' ) .'</td>';
     
+    //4 horas
+    $sobra = $soma - (4 * 60 * 60);
+    if($sobra < 0){
+        $sobra = 0;
+    } 
+        
+    echo '<td>'. ($sobra > 0 ? Util::sec_to_time($sobra) : '' ) .'</td>';
+    $somaSobras += $sobra;
+    
     $proximaData = isset($registros[$i + 1]) ? $registros[$i + 1]['data'] : null;
     $virouMes = empty($proximaData) || date('m', strtotime($registro['data'])) != date('m', strtotime($proximaData));
     
@@ -63,10 +75,27 @@ foreach($registros as $i => $registro) {
         echo '<td></td>';
         echo '<td></td>';
         echo '<td>'. ($somaMes > 0 ? Util::sec_to_time($somaMes) : '') .'</td>';
+        echo '<td>'. ($somaSobras > 0 ? Util::sec_to_time($somaSobras) : '') .'</td>';
         echo '</tr>';
-        
-        $somaMes = 0;
+       
+        $somaMeses[] = [
+            'data' => $registro['data'],
+            'soma' => $somaMes,
+            'somaSobra' => $somaSobras
+        ];
+        $somaMes = $somaSobras = 0;
     }
+    echo '</tr>';
+}
+?>
+</table>
+<table>
+<?php
+foreach($somaMeses as $soma) {
+    echo '<tr>';
+    echo '<td>'. date('m/Y', strtotime($soma['data'])) .'</td>';
+    echo '<td>' . Util::sec_to_time($soma['soma']) . '</td>';
+    echo '<td>' . Util::sec_to_time($soma['somaSobra']) . '</td>';
     echo '</tr>';
 }
 ?>
