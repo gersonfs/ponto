@@ -20,56 +20,36 @@ and open the template in the editor.
                 border-collapse: collapse;
             }
             
-            tr.Dom td{
+            tr.descanso_semanal td{
                 color: red;
             }
         </style>
     </head>
     <body>
         <?php
-        include('Util.php');
+        $times = [];
+        $times[] = [microtime(true), 'inicio'];
+        include('../Util.php');
+        $config = include('config.php');
+        foreach($config['jornadas'] as $jornada) {
+            $descanso = isset($jornada['descansoSemanal']) ? $jornada['descansoSemanal'] : 0;
+            Util::addJornadaTrabalho($jornada['horarios'], $jornada['inicio'], $jornada['fim'], $descanso);
+        }
+        Util::setPossuiHoraExtraIregularmenteCompensada($config['possuiHoraExtraIC']);
+        Util::setEstenderHoraNoturna($config['estenderHoraNoturna']);
+        $hora100Porcento = $config['hora100Porcento'];
+        $hora130Porcento = $config['hora130Porcento'];
+        $segundosIntrajornada = $config['segundosIntrajornada'];
+        $possuiIntraJornada = $config['possuiIntraJornada'];
+        $arquivo = $config['arquivo'];
         
-        Util::addJornadaTrabalho([
-            1 => [
-                ['07:30', '12:30'],
-                ['13:00', '16:00'],
-            ],
-            2 => [
-                ['07:30', '12:30'],
-                ['13:00', '16:00'],
-            ],
-            3 => [
-                ['07:30', '12:30'],
-                ['13:00', '16:00'],
-            ],
-            4 => [
-                ['07:30', '12:30'],
-                ['13:00', '16:00'],
-            ],
-            5 => [
-                ['07:30', '12:30'],
-                ['13:00', '16:00'],
-            ],
-            6 => [
-                ['07:15', '11:15'],
-            ],
-        ], '05/03/2014', '12/06/2016');
-
-        Util::setPossuiHoraExtraIregularmenteCompensada(false);
-        //$hora100Porcento = 22;
-        //$hora130Porcento = 38;
-
-        $hora100Porcento = 1000;
-        $hora130Porcento = 1000;
-        $segundosIntrajornada = 60 * 60;
-        $possuiIntraJornada = true;
-
-        $f = fopen('ponto5.csv', 'r');
+        $f = fopen($arquivo, 'r');
         $dados = [];
         $i = 0;
         $mes = 0;
         $semana = 0;
         $registrosObservacoes = [];
+        $times[] = [microtime(true), 'antes foreach'];
         while ($linha = fgetcsv($f, 0, ';')) {
 
             $possuiDadosNaLinha = false;
@@ -129,58 +109,8 @@ and open the template in the editor.
         }
         fclose($f);
 
+        $times[] = [microtime(true), 'apos fechar arquivo'];
         Util::setRegistrosObservacoes($registrosObservacoes);
-        
-        /*Util::setJornadaTrabalho([
-            1 => [
-                ['07:15', '12:00'],
-                ['13:00', '16:15'],
-            ],
-            2 => [
-                ['07:15', '12:00'],
-                ['13:00', '16:15'],
-            ],
-            3 => [
-                ['07:15', '12:00'],
-                ['13:00', '16:15'],
-            ],
-            4 => [
-                ['07:15', '12:00'],
-                ['13:00', '16:15'],
-            ],
-            5 => [
-                ['07:15', '12:00'],
-                ['13:00', '16:15'],
-            ],
-            6 => [
-                ['08:00', '12:00'],
-            ],
-        ]);
-
-        Util::setJornadaTrabalho([
-            1 => [
-                ['07:15', '12:00'],
-                ['13:00', '17:15'],
-            ],
-            2 => [
-                ['07:15', '12:00'],
-                ['13:00', '17:15'],
-            ],
-            3 => [
-                ['07:15', '12:00'],
-                ['13:00', '17:15'],
-            ],
-            4 => [
-                ['07:15', '12:00'],
-                ['13:00', '17:15'],
-            ],
-            5 => [
-                ['07:15', '12:00'],
-                ['13:00', '16:15'],
-            ],
-        ]);*/
-        
-        //echo '<pre>' . print_r($dados, true) . '</pre>';
         
         ?>
         <pre>
@@ -214,6 +144,8 @@ and open the template in the editor.
                 $totalHEMenosHIC = $totalHTMes = $totalHNMes = $tSegundosNormais = $tSegundosTrabalhados = $sHE = $sHIC = $sH100 = $sHN = $sHi = 0;
                 $totaisMeses = [];
                 foreach ($dados as $i=>$dado) {
+                    $times[] = [microtime(true), 'inicio registro tabela'];
+                    
                     $dia = Util::getDiaDaSemanaCurto($dado['data']);
                     $mostrarHoraSemana = (Util::isSabado($dado) && isset($dados[$i+1]['is_fechamento'])) || isset($dado['is_fechamento']);
                     
@@ -253,8 +185,14 @@ and open the template in the editor.
                         $sHi += $dado['hora_intrajornada'];
                     }
 
+                    $times[] = [microtime(true), 'antes registro tabela'];
+                    
                     $totalHEMenosHIC += $heHic;
-                    echo '<tr class="'. $dia .'">';
+                    $class = $dia;
+                    if(Util::isDescansoSemanal($dado)) {
+                        $class .= ' descanso_semanal';
+                    }
+                    echo '<tr class="'. $class .'">';
                     echo '<td>' . $dia . '</td>';
                     echo '<td>' . Util::dataISOToBR($dado['data']) . '</td>';
                     echo '<td>' . $dado['obs'] . '</td>';
@@ -343,6 +281,8 @@ and open the template in the editor.
                         $totalHEMenosHIC = $sH100 = $sHIC = $sHE = $tSegundosNormais = $totalHNMes = $totalHTMes = $tSegundosTrabalhados = $sHN = $sHi = 0;
                     }
                 }
+                
+                $times[] = [microtime(true), 'apos tabela ponto'];
                 ?>
         </table>
         <br /><br />
@@ -409,9 +349,11 @@ and open the template in the editor.
                 </tr>
             </tfoot>
         </table>
-        
-        <p>Jornada:</p>
         <?php
+        $times[] = [microtime(true), 'apos totais'];
+        
+        ?>
+        <p>Jornada:</p><?php
             $jornadas = Util::getJornadas();
             foreach($jornadas as $jornada) {
                 echo 'Início: ' . date("d/m/Y", strtotime($jornada['inicio']));
@@ -428,6 +370,12 @@ and open the template in the editor.
                     echo implode(', ', $str);
                     echo '</p>';
                 }
+            }
+            
+            $times[] = [microtime(true), 'apos jornada'];
+            
+            foreach($times as $time) {
+                //echo $time[0] . ' ' . $time[1] . '<br />';
             }
         ?>
 
