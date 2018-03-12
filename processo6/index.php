@@ -94,8 +94,8 @@ foreach($registros as $i => $registro) {
 foreach($somaMeses as $soma) {
     echo '<tr>';
     echo '<td>'. date('m/Y', strtotime($soma['data'])) .'</td>';
-    echo '<td>' . Util::sec_to_time($soma['soma']) . '</td>';
-    echo '<td>' . Util::sec_to_time($soma['somaSobra']) . '</td>';
+    echo '<td>' . Util::formatarNumero(round($soma['soma'] / 60 / 60, 2)) . '</td>';
+    echo '<td>' . Util::formatarNumero(round($soma['somaSobra'] / 60 / 60, 2)) . '</td>';
     echo '</tr>';
 }
 ?>
