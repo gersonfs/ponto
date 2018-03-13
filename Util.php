@@ -1092,24 +1092,28 @@ class Util {
             $dEntrada =  DateTime::createFromFormat('Y-m-d H:i', $ponto['data'] . ' ' . $entrada);
             $dSaida =  DateTime::createFromFormat('Y-m-d H:i', $diaSaida . ' ' . $saida);
             
-            if(self::$estenderHoraNoturna && $dEntrada <= $dataEntrada && $dSaida >= $dataSaida) {
-                $segundos += ($dSaida->getTimestamp() - $dEntrada->getTimestamp());
+            
+            $possuiHoraNoturna = $dSaida > $dataEntrada && $dEntrada < $dataSaida;
+            
+            if(!$possuiHoraNoturna) {
                 continue;
             }
             
-            if($dSaida > $dataEntrada && $dEntrada < $dataSaida) {
-                $t1 = $dEntrada;
-                if($t1 < $dataEntrada) {
-                    $t1 = $dataEntrada;
-                }
-                
-                $t2 = $dSaida;
-                if($t2 > $dataSaida) {
-                    $t2 = $dataSaida;
-                }
-                
-                $segundos += $t2->getTimestamp() - $t1->getTimestamp();
+            $t1 = $dEntrada;
+            if($t1 < $dataEntrada) {
+                $t1 = $dataEntrada;
             }
+            
+            $t2 = $dSaida;
+            if($t2 > $dataSaida) {
+                $t2 = $dataSaida;
+            }
+            
+            if(self::$estenderHoraNoturna && $dEntrada <= $dataEntrada && $dSaida >= $dataSaida) {
+                $t2 = $dSaida;
+            }
+            
+            $segundos += $t2->getTimestamp() - $t1->getTimestamp();
         }
         
         return $segundos;
