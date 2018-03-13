@@ -871,6 +871,10 @@ class Util {
             return null;
         }
         
+        if (self::isDescansoSemanal($ponto)) {
+            return null;
+        }
+        
         $jornada = self::getJornadaData($ponto['data']);
         
         if(empty($jornada)) {
