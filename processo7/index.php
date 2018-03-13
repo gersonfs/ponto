@@ -158,7 +158,7 @@ and open the template in the editor.
                     }
                     
                     $segundosNormais = Util::getSegundosNormais($dado);
-                    $segundosTrabalhados = Util::getSegundosTrabalhados($dado);
+                    $segundosTrabalhados = Util::getSegundosTrabalhadosHoraNoturna($dado);
                     $tSegundosNormais += $segundosNormais;
                     $tSegundosTrabalhados += $segundosTrabalhados;
                     $he = Util::getHorasExtras($dado);

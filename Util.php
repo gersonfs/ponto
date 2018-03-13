@@ -719,20 +719,33 @@ class Util {
 
         return self::sec_to_time($segundos, false);
     }
+    
+    public static function getSegundosTrabalhadosHoraNoturna($ponto) {
+        $segundosDiurno = self::getSegundosDiurno($ponto);
+        $segundosNoturnos = self::getSegundosNoturno($ponto);
+        return $segundosDiurno + self::converterSegundosNormalSegundosHoraNoturna($segundosNoturnos);
+    }
+    
+    public static function getSegundosDiurno($ponto) {
+        $segundosTrabalhados = self::getSegundosTrabalhados($ponto);
+        $segundosNoturnos = self::getSegundosNoturno($ponto);
+        return $segundosTrabalhados - $segundosNoturnos;
+    }
 
     public static function getSegundosTrabalhados($ponto) {
-        if (empty($ponto['entrada1'])) {
-            return null;
-        }
         
-        $t1 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['entrada1']);
-        $t2 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['saida1']);
+        $segundos = 0;
         
-        if($t2 < $t1) {
-            $t2->add(DateInterval::createFromDateString('1 day'));
+        if (strlen($ponto['entrada1'])) {
+            $t1 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['entrada1']);
+            $t2 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['saida1']);
+
+            if($t2 < $t1) {
+                $t2->add(DateInterval::createFromDateString('1 day'));
+            }
+
+            $segundos += $t2->getTimestamp() - $t1->getTimestamp();
         }
-            
-        $segundos = $t2->getTimestamp() - $t1->getTimestamp();
 
         if (strlen($ponto['entrada2'])) {
             $t1 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['entrada2']);
@@ -1004,7 +1017,7 @@ class Util {
     }
     
     public static function getHorasExtras($ponto) {
-        $segundosTrabalhados = self::getSegundosTrabalhados($ponto);
+        $segundosTrabalhados = self::getSegundosTrabalhadosHoraNoturna($ponto);
         $segundosNormal = self::getSegundosNormais($ponto);
 
         if($segundosTrabalhados === null) {
@@ -1057,16 +1070,18 @@ class Util {
     }
     
     public static function getSegundosConvertidosHoraNoturna($ponto) {
-        
         $segundos = self::getSegundosNoturno($ponto);
         if($segundos === 0) {
             return null;
         }
-        $segundosAcima22Horas = $segundos;
+        return self::converterSegundosNormalSegundosHoraNoturna($segundos);
+    }
+    
+    public static function converterSegundosNormalSegundosHoraNoturna($segundosNormais) {
         $segundosUmaHoraNoturna = 52.5 * 60;
         
         //Convertendo para segundos, pois o resultado da divisao gera um fator em hora
-        return ($segundosAcima22Horas / $segundosUmaHoraNoturna) * 60 * 60;
+        return ($segundosNormais / $segundosUmaHoraNoturna) * 60 * 60;
     }
     
     public static function getSegundosNoturno($ponto) {
