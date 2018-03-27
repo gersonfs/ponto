@@ -9,6 +9,8 @@ class Util {
     private static $possuiHEIC = true;
     
     private static $estenderHoraNoturna = false;
+    
+    public static $informarDSR = false;
 
     private static $registrosObservacoes = [];
     
@@ -104,7 +106,7 @@ class Util {
     }
 
     public static function getFeriados() {
-        return self::getRegistrosData(['feriado', 'licenca r.', 'lic. n. r.', 'liberac.r.']);
+        return self::getRegistrosData(['feriado', 'licenca r.', 'lic. n. r.', 'liberac.r.', 'feriado n.c.']);
     }
 
     public static function getAusencias() {
@@ -758,7 +760,7 @@ class Util {
             $segundos += $t2->getTimestamp() - $t1->getTimestamp();
         }
         
-        if (strlen($ponto['entrada3'])) {
+        if (isset($ponto['entrada3']) && strlen($ponto['entrada3'])) {
             $t1 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['entrada3']);
             $t2 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['saida3']);
             
@@ -768,7 +770,7 @@ class Util {
             $segundos += $t2->getTimestamp() - $t1->getTimestamp();
         }
         
-        if (strlen($ponto['entrada4'])) {
+        if (isset($ponto['entrada4']) && strlen($ponto['entrada4'])) {
             $t1 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['entrada4']);
             $t2 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['saida4']);
             
@@ -933,6 +935,13 @@ class Util {
     }
 
     public static function isDescansoSemanal($ponto) {
+        if(self::$informarDSR) {
+            if($ponto['obs'] == 'dsr') {
+                return true;
+            }
+            return false;
+        }
+        
         return date('w', strtotime($ponto['data'])) == self::getDiaDescansoSemanal($ponto['data']);
     }
     
@@ -948,6 +957,10 @@ class Util {
 
     public static function isSabado($ponto) {
         return date('w', strtotime($ponto['data'])) == 6;
+    }
+    
+    public static function isDomingo($ponto) {
+        return date('w', strtotime($ponto['data'])) == 0;
     }
 
     public static function getSegundosTrabalhadosSemana($ponto, $pontos) {
@@ -1058,7 +1071,7 @@ class Util {
     }
 
     public static function getObservacoesTratadas() {
-        return ['ferias', 'atestado', 'ausencia', 'feriado', 'falta', 'licenca r.', 'lic. n. r.', 'liberac.r.', 'compens.'];
+        return ['ferias', 'atestado', 'ausencia', 'feriado', 'falta', 'licenca r.', 'lic. n. r.', 'liberac.r.', 'compens.', 'dsr', 'feriado c.', 'feriado n.c.', 'atestado p.'];
     }
 
     public static function setRegistrosObservacoes($registros) {
@@ -1092,6 +1105,11 @@ class Util {
         
         $segundos = 0;
         for($i = 1; $i <= 4; $i++) {
+            
+            if(!isset($ponto['entrada' . $i])) {
+                continue;
+            }
+            
             $entrada = $ponto['entrada' . $i];
             $saida = $ponto['saida' . $i];
             
@@ -1136,6 +1154,40 @@ class Util {
     
     public static function getJornadas() {
         return self::$jornadas;
+    }
+    
+    public static function getHoraItinere($ponto) {
+        $horaItinere = '00:40';
+        
+        for($i = 1; $i <= 4; $i++) {
+            if(isset($ponto['saida' .$i]) && !empty($ponto['saida' .$i])) {
+                
+                if(self::isSabado($ponto)) {
+                    return $horaItinere;
+                }
+
+                if(self::isDomingo($ponto)) {
+                    return $horaItinere;
+                }
+
+                $entrada = $ponto['entrada' . $i];
+                $saida = $ponto['saida' . $i];
+                
+                $diaSaida = $ponto['data'];
+                if(Util::time_to_sec($saida) < Util::time_to_sec($entrada)) {
+                    $diaSaida = date('Y-m-d', strtotime('+1 day', strtotime($diaSaida)));
+                }
+                $dSaida = DateTime::createFromFormat('Y-m-d H:i', $diaSaida . ' ' . $saida);
+                
+                $dLimite = DateTime::createFromFormat('Y-m-d H:i', $ponto['data'] . ' 23:30');
+                if($dSaida > $dLimite) {
+                    return $horaItinere;
+                }
+                
+            }
+        }
+        
+        return null;
     }
 
 }
