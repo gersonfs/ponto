@@ -1071,7 +1071,7 @@ class Util {
     }
 
     public static function getObservacoesTratadas() {
-        return ['ferias', 'atestado', 'ausencia', 'feriado', 'falta', 'licenca r.', 'lic. n. r.', 'liberac.r.', 'compens.', 'dsr', 'feriado c.', 'feriado n.c.', 'atestado p.'];
+        return ['ferias', 'atestado', 'ausencia', 'feriado', 'falta', 'licenca r.', 'lic. n. r.', 'liberac.r.', 'compens.', 'dsr', 'feriado c.', 'feriado n.c.', 'atestado p.', 'aus. de c. ponto', 'folga', 'aux. doenca'];
     }
 
     public static function setRegistrosObservacoes($registros) {
@@ -1188,6 +1188,49 @@ class Util {
         }
         
         return null;
+    }
+    
+    /**
+     * A cada 50 minutos, retorna 10
+     * @param array $ponto
+     * @return int Segundos de Int DIG
+     */
+    public static function getIntDig($ponto) {
+        $total = 0;
+        for($i = 1; $i <= 4; $i++) {
+            if(isset($ponto['entrada' .$i]) && !empty($ponto['entrada' .$i])) {
+                
+                $entrada = $ponto['entrada' . $i];
+                $saida = $ponto['saida' . $i];
+                
+                $diaSaida = $ponto['data'];
+                if(Util::time_to_sec($saida) < Util::time_to_sec($entrada)) {
+                    $diaSaida = date('Y-m-d', strtotime('+1 day', strtotime($diaSaida)));
+                }
+                
+                $dEntrada = DateTime::createFromFormat('Y-m-d H:i', $ponto['data'] . ' ' . $entrada);
+                $dSaida = DateTime::createFromFormat('Y-m-d H:i', $diaSaida . ' ' . $saida);
+                
+                $intervalo = $dEntrada->diff($dSaida);
+                
+                $segundos = self::toSeconds($intervalo);
+                
+                $qtd = floor($segundos / (50*60));
+                
+                $total += $qtd;
+            }
+        }
+        
+        return $total * 10 * 60;
+    }
+    
+    public static function toSeconds(DateInterval $interval):int {
+        return ($interval->y * 365 * 24 * 60 * 60) +
+               ($interval->m * 30 * 24 * 60 * 60) +
+               ($interval->d * 24 * 60 * 60) +
+               ($interval->h * 60 * 60) +
+               ($interval->i * 60) +
+               $interval->s; 
     }
 
 }
