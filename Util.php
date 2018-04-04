@@ -798,11 +798,12 @@ class Util {
         }
         
         for($i = 1; $i <= 4; $i++) {
-            $horaEntrada = $ponto['entrada' . $i];
             
-            if(empty($horaEntrada)) {
-                break;
+            if(!isset($ponto['entrada' . $i]) || empty($ponto['entrada' . $i])) {
+                continue;
             }
+            
+            $horaEntrada = $ponto['entrada' . $i];
             
             $k = 0;
             $menorHoraJornada = null;
@@ -864,17 +865,21 @@ class Util {
         return null;
     }
 
-    public static function getSegundosNormais($ponto) {
-        $segundos = self::getHorasNormais($ponto);
+    public static function getSegundosNormais($ponto, $options = []) {
+        $segundos = self::getHorasNormais($ponto, $options);
         if ($segundos === null) {
             return;
         }
         return $segundos * 60 * 60;
     }
 
-    public static function getHorasNormais($ponto) {
-
-        if (self::isFeriado($ponto['data'])) {
+    public static function getHorasNormais($ponto, $options = []) {
+        
+        $options += [
+            'ignorarFeriados' => false
+        ];
+        
+        if (self::isFeriado($ponto['data']) && !$options['ignorarFeriados']) {
             return null;
         }
 
@@ -984,7 +989,7 @@ class Util {
             return 0;
         }
 
-        $segundosNormais = self::getSegundosNormais($ponto);
+        $segundosNormais = self::getSegundosNormais($ponto, ['ignorarFeriados' => true]);
         
         if($segundosNormais === null) {
             return;
