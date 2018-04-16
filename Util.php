@@ -862,6 +862,10 @@ class Util {
             return $jornada['jornada'][$diaSemana];
         }
         
+        if(isset($jornada['jornada'][$data])) {
+            return $jornada['jornada'][$data];
+        }
+        
         return null;
     }
 
@@ -900,7 +904,7 @@ class Util {
         if(empty($jornada)) {
             return null;
         }
-
+        
         $soma = 0;
         foreach($jornada as $j) {
             
