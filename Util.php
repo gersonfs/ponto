@@ -1243,3 +1243,9 @@ class Util {
     }
 
 }
+
+if(!function_exists('debug')) {
+    function debug($var) {
+        echo '<pre>' . print_r($var, true) . '</pre>';
+    }
+}
