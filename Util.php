@@ -724,13 +724,13 @@ class Util {
     
     public static function getSegundosTrabalhadosHoraNoturna($ponto) {
         $segundosDiurno = self::getSegundosDiurno($ponto);
-        $segundosNoturnos = self::getSegundosNoturno($ponto);
+        $segundosNoturnos = self::getSegundosNoturnoPonto($ponto);
         return $segundosDiurno + self::converterSegundosNormalSegundosHoraNoturna($segundosNoturnos);
     }
     
     public static function getSegundosDiurno($ponto) {
         $segundosTrabalhados = self::getSegundosTrabalhados($ponto);
-        $segundosNoturnos = self::getSegundosNoturno($ponto);
+        $segundosNoturnos = self::getSegundosNoturnoPonto($ponto);
         return $segundosTrabalhados - $segundosNoturnos;
     }
 
@@ -877,6 +877,13 @@ class Util {
         return $segundos * 60 * 60;
     }
 
+    /**
+     * Retorna quantidade de horas normais
+     *
+     * @param array $ponto
+     * @param array $options
+     * @return float Horas
+     */
     public static function getHorasNormais($ponto, $options = []) {
         
         $options += [
@@ -1092,7 +1099,7 @@ class Util {
     }
     
     public static function getSegundosConvertidosHoraNoturna($ponto) {
-        $segundos = self::getSegundosNoturno($ponto);
+        $segundos = self::getSegundosNoturnoPonto($ponto);
         if($segundos === 0) {
             return null;
         }
@@ -1106,7 +1113,7 @@ class Util {
         return ($segundosNormais / $segundosUmaHoraNoturna) * 60 * 60;
     }
     
-    public static function getSegundosNoturno($ponto) {
+    public static function getSegundosNoturnoPonto($ponto) {
         
         $dataEntrada = DateTime::createFromFormat('Y-m-d H:i', $ponto['data'] . ' 22:00');
         $diaSeguinte = date('Y-m-d', strtotime('+1 day', strtotime($ponto['data'])));
@@ -1135,31 +1142,41 @@ class Util {
             $dSaida =  DateTime::createFromFormat('Y-m-d H:i', $diaSaida . ' ' . $saida);
             
             
-            $possuiHoraNoturna = $dSaida > $dataEntrada && $dEntrada < $dataSaida;
-            
-            if(!$possuiHoraNoturna) {
-                continue;
-            }
-            
-            $t1 = $dEntrada;
-            if($t1 < $dataEntrada) {
-                $t1 = $dataEntrada;
-            }
-            
-            $t2 = $dSaida;
-            if($t2 > $dataSaida) {
-                $t2 = $dataSaida;
-            }
-            
-            if(self::$estenderHoraNoturna && $dEntrada <= $dataEntrada && $dSaida >= $dataSaida) {
-                $t2 = $dSaida;
-            }
-            
-            $segundos += $t2->getTimestamp() - $t1->getTimestamp();
+            $segundos += self::getSegundosNoturno($dEntrada, $dSaida, self::$estenderHoraNoturna);
         }
         
         return $segundos;
     }
+
+    public static function getSegundosNoturno(DateTime $entrada, DateTime $saida, bool $estenderHoraNoturna = false) {
+
+        $tmp = clone $entrada;
+        //Quando a hora de entrada é entre meia noite e as 5 horas da manhã, aí atraso um dia
+        if($entrada->format('hm') < 500) {
+            $tmp->sub(new DateInterval('P1D'));
+        }
+        $dataEntradaHN = DateTime::createFromFormat('Y-m-d H:i', $tmp->format('Y-m-d') . ' 22:00');
+        $tmp->add(new DateInterval('P1D'));
+        $dataSaidaHN = DateTime::createFromFormat('Y-m-d H:i', $tmp->format('Y-m-d') . ' 05:00');
+
+        //Tem que ter entrado antes das 22 horas
+        if($estenderHoraNoturna && $entrada <= $dataEntradaHN) {
+            $dataSaidaHN = max($dataSaidaHN, $saida);
+        }
+        
+        return self::datesOverlap($entrada, $saida, $dataEntradaHN, $dataSaidaHN);
+    }
+
+    private static function datesOverlap($startOne, $endOne, $startTwo, $endTwo) {
+
+        if($startOne <= $endTwo && $endOne >= $startTwo) {
+            $fim = min($endOne, $endTwo);
+            $inicio = max($startTwo, $startOne);
+            return self::toSeconds($fim->diff($inicio));
+        }
+     
+        return 0;
+     }
     
     public static function getJornadas() {
         return self::$jornadas;
