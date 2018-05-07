@@ -1115,10 +1115,6 @@ class Util {
     
     public static function getSegundosNoturnoPonto($ponto) {
         
-        $dataEntrada = DateTime::createFromFormat('Y-m-d H:i', $ponto['data'] . ' 22:00');
-        $diaSeguinte = date('Y-m-d', strtotime('+1 day', strtotime($ponto['data'])));
-        $dataSaida = DateTime::createFromFormat('Y-m-d H:i', $diaSeguinte . ' 05:00');
-        
         $segundos = 0;
         for($i = 1; $i <= 4; $i++) {
             
