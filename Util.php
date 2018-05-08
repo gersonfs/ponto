@@ -1153,7 +1153,7 @@ class Util {
 
         $tmp = clone $entrada;
         //Quando a hora de entrada é entre meia noite e as 5 horas da manhã, aí atraso um dia
-        if($entrada->format('hm') < 500) {
+        if($entrada->format('Hm') < 500) {
             $tmp->sub(new DateInterval('P1D'));
         }
         $dataEntradaHN = DateTime::createFromFormat('Y-m-d H:i', $tmp->format('Y-m-d') . ' 22:00');
