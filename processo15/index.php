@@ -275,6 +275,8 @@ and open the template in the editor.
                         echo '<td></td>';
                         echo '<td></td>';
                         echo '<td></td>';
+                        echo '<td></td>';
+                        echo '<td></td>';
                         echo '<td>' . Util::sec_to_time($tSegundosNormais)  . '</td>';
                         echo '<td>' . Util::sec_to_time($tSegundosTrabalhados)  . '</td>';
                         echo '<td>' . Util::sec_to_time($sHE) .'</td>';
