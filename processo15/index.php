@@ -98,6 +98,8 @@ and open the template in the editor.
                 'saida1' => $linha[4],
                 'entrada2' => $linha[5],
                 'saida2' => $linha[6],
+                'entrada3' => $linha[7],
+                'saida3' => $linha[8],
                 'hora_intrajornada' => $horaIntrajornada,
                 'mes' => $mes,
                 'semana' => $semana
@@ -120,6 +122,8 @@ and open the template in the editor.
                 <td>Dia</td>
                 <td>Data</td>
                 <td>Obs</td>
+                <td>Entrada</td>
+                <td>Saida</td>
                 <td>Entrada</td>
                 <td>Saida</td>
                 <td>Entrada</td>
@@ -212,6 +216,8 @@ and open the template in the editor.
                     echo '<td>' . $dado['saida1'] . '</td>';
                     echo '<td>' . $dado['entrada2'] . '</td>';
                     echo '<td>' . $dado['saida2'] . '</td>';
+                    echo '<td>' . $dado['entrada3'] . '</td>';
+                    echo '<td>' . $dado['saida3'] . '</td>';
                     echo '<td title="Hora Normal">' . Util::sec_to_time($segundosNormais) . '</td>';
                     echo '<td title="Hora Trabalhada">' . Util::sec_to_time($segundosTrabalhados) . '</td>';
                     echo '<td title="Hora Extra">' . Util::sec_to_time($he) . '</td>';
