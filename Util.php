@@ -734,54 +734,8 @@ class Util {
         return $segundosTrabalhados - $segundosNoturnos;
     }
 
-    public static function getSegundosTrabalhados($ponto) {
-        
-        $segundos = 0;
-        
-        if (strlen($ponto['entrada1'])) {
-            $t1 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['entrada1']);
-            $t2 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['saida1']);
-
-            if($t2 < $t1) {
-                $t2->add(DateInterval::createFromDateString('1 day'));
-            }
-
-            $segundos += $t2->getTimestamp() - $t1->getTimestamp();
-        }
-
-        if (strlen($ponto['entrada2'])) {
-            $t1 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['entrada2']);
-            $t2 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['saida2']);
-
-            if($t2 < $t1) {
-                $t2->add(DateInterval::createFromDateString('1 day'));
-            }
-        
-            $segundos += $t2->getTimestamp() - $t1->getTimestamp();
-        }
-        
-        if (isset($ponto['entrada3']) && strlen($ponto['entrada3'])) {
-            $t1 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['entrada3']);
-            $t2 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['saida3']);
-            
-            if($t2 < $t1) {
-                $t2->add(DateInterval::createFromDateString('1 day'));
-            }
-            $segundos += $t2->getTimestamp() - $t1->getTimestamp();
-        }
-        
-        if (isset($ponto['entrada4']) && strlen($ponto['entrada4'])) {
-            $t1 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['entrada4']);
-            $t2 = DateTime::createFromFormat("Y-m-d H:i", $ponto['data'] . ' ' . $ponto['saida4']);
-            
-            if($t2 < $t1) {
-                $t2->add(DateInterval::createFromDateString('1 day'));
-            }
-            
-            $segundos += $t2->getTimestamp() - $t1->getTimestamp();
-        }
-
-        return $segundos;
+    public static function getSegundosTrabalhados(Ponto $ponto) {
+        return $ponto->getSegundosTrabalhados();
     }
     
     public static function possuiDiferencaMaior5Min($ponto) {
@@ -857,7 +811,7 @@ class Util {
         $timeData = strtotime($data);
         $diaSemana = date('w', $timeData);
         $jornada = self::getJornada($data);
-        
+
         if(isset($jornada['jornada'][$diaSemana])) {
             return $jornada['jornada'][$diaSemana];
         }
@@ -976,14 +930,6 @@ class Util {
         return 0;
     }
 
-    public static function isSabado($ponto) {
-        return date('w', strtotime($ponto['data'])) == 6;
-    }
-    
-    public static function isDomingo($ponto) {
-        return date('w', strtotime($ponto['data'])) == 0;
-    }
-
     public static function getSegundosTrabalhadosSemana($ponto, $pontos) {
         $segundos = 0;
         foreach ($pontos as $ponto2) {
@@ -1011,7 +957,7 @@ class Util {
             return;
         }
             
-        if(self::isSabado($ponto)) {
+        if($ponto->isSabado()) {
             return 0;
         }
         
@@ -1134,14 +1080,8 @@ class Util {
                 continue;
             }
             
-            $diaSaida = $ponto['data'];
-            if(Util::time_to_sec($saida) < Util::time_to_sec($entrada)) {
-                $diaSaida = date('Y-m-d', strtotime('+1 day', strtotime($diaSaida)));
-            }
-            
-            $dEntrada =  DateTime::createFromFormat('Y-m-d H:i', $ponto['data'] . ' ' . $entrada);
-            $dSaida =  DateTime::createFromFormat('Y-m-d H:i', $diaSaida . ' ' . $saida);
-            
+            $dEntrada = $ponto['dt_entrada' . $i];
+            $dSaida = $ponto['dt_saida' . $i];
             
             $segundos += self::getSegundosNoturno($dEntrada, $dSaida, self::$estenderHoraNoturna);
         }
@@ -1181,40 +1121,6 @@ class Util {
     
     public static function getJornadas() {
         return self::$jornadas;
-    }
-    
-    public static function getHoraItinere($ponto) {
-        $horaItinere = '00:40';
-        
-        for($i = 1; $i <= 4; $i++) {
-            if(isset($ponto['saida' .$i]) && !empty($ponto['saida' .$i])) {
-                
-                if(self::isSabado($ponto)) {
-                    return $horaItinere;
-                }
-
-                if(self::isDomingo($ponto)) {
-                    return $horaItinere;
-                }
-
-                $entrada = $ponto['entrada' . $i];
-                $saida = $ponto['saida' . $i];
-                
-                $diaSaida = $ponto['data'];
-                if(Util::time_to_sec($saida) < Util::time_to_sec($entrada)) {
-                    $diaSaida = date('Y-m-d', strtotime('+1 day', strtotime($diaSaida)));
-                }
-                $dSaida = DateTime::createFromFormat('Y-m-d H:i', $diaSaida . ' ' . $saida);
-                
-                $dLimite = DateTime::createFromFormat('Y-m-d H:i', $ponto['data'] . ' 23:30');
-                if($dSaida > $dLimite) {
-                    return $horaItinere;
-                }
-                
-            }
-        }
-        
-        return null;
     }
     
     /**
