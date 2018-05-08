@@ -915,17 +915,22 @@ class Util {
         $soma = 0;
         foreach($jornada as $j) {
             
-            $entrada = Util::time_to_sec($j[0]);
-            $saida = Util::time_to_sec($j[1]);
+            $entrada = new DateTime($ponto['data'] . ' ' . $j[0]);
+            $saida = new DateTime($ponto['data'] . ' ' . $j[1]);
             
             //Entrou num dia e saiu no outro
             if($saida < $entrada) {
-                $soma += Util::time_to_sec('24:00:00') - $entrada;
-                $soma += $saida;
-                continue;
+                $saida->add(new DateInterval('P1D'));
             }
-            
-            $soma += $saida - $entrada;
+
+            $diferenca = $saida->diff($entrada);
+            $totalSegundos = self::toSeconds($diferenca);
+            $segundosNoturnos = self::getSegundosNoturno($entrada, $saida);
+            $segundosDiurnos = $totalSegundos - $segundosNoturnos;
+            $segundosNoturnoConvertidos = self::converterSegundosNormalSegundosHoraNoturna($segundosNoturnos);
+            $segundosHoraNormalConvertidos = $segundosNoturnoConvertidos + $segundosDiurnos;
+
+            $soma += $segundosHoraNormalConvertidos;
         }
 
 
