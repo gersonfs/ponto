@@ -40,6 +40,11 @@ class Ponto extends ArrayObject
             $t1 = DateTime::createFromFormat("Y-m-d H:i", $this->ponto['data'] . ' ' . $this->ponto['entrada' . $i]);
             $t2 = DateTime::createFromFormat("Y-m-d H:i", $this->ponto['data'] . ' ' . $this->ponto['saida' . $i]);
 
+            if($t2 === false) {
+                debug($i);
+                debug($this->ponto);
+            }
+
             if ($t2 < $t1) {
                 $t2->add(DateInterval::createFromDateString('1 day'));
             }
