@@ -33,16 +33,8 @@ and open the template in the editor.
         include('../Ponto.php');
         
         $config = include('config.php');
-        foreach($config['jornadas'] as $jornada) {
-            $descanso = isset($jornada['descansoSemanal']) ? $jornada['descansoSemanal'] : 0;
-            Util::addJornadaTrabalho($jornada['horarios'], $jornada['inicio'], $jornada['fim'], $descanso);
-        }
-        Util::setPossuiHoraExtraIregularmenteCompensada($config['possuiHoraExtraIC']);
-        Util::setEstenderHoraNoturna($config['estenderHoraNoturna']);
-        if(isset($config['informarDSR']) && $config['informarDSR']) {
-            Util::$informarDSR = true;
-        }
-        
+        Util::setConfig($config);
+
         $hora100Porcento = $config['hora100Porcento'];
         $hora130Porcento = $config['hora130Porcento'];
         $segundosIntrajornada = $config['segundosIntrajornada'];

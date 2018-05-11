@@ -9,6 +9,8 @@ $dados = [
     'possuiHoraExtraIC' => false,
     'estenderHoraNoturna' => false,
     'possuiItinere' => false,
+    'horaExtraSimples' => false, //Faz total de horas da jornada menos o ponto,
+    'horaExtraConsiderarHoraFalta' => false,
     'jornadas' => [
         [
             'inicio' => '18/08/2010', 

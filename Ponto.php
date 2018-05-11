@@ -106,4 +106,28 @@ class Ponto extends ArrayObject
         return null;
     }
 
+    public function getSegundosNoturno($estenderHoraNoturna = false) {
+        $segundos = 0;
+        for($i = 1; $i <= 4; $i++) {
+            
+            if(!isset($this->ponto['entrada' . $i])) {
+                continue;
+            }
+            
+            $entrada = $this->ponto['entrada' . $i];
+            $saida = $this->ponto['saida' . $i];
+            
+            if(empty($entrada)) {
+                continue;
+            }
+            
+            $dEntrada = $this->ponto['dt_entrada' . $i];
+            $dSaida = $this->ponto['dt_saida' . $i];
+            
+            $segundos += Util::getSegundosNoturno($dEntrada, $dSaida, $estenderHoraNoturna);
+        }
+        
+        return $segundos;
+    }
+
 }

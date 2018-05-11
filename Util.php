@@ -15,6 +15,7 @@ class Util {
     private static $registrosObservacoes = [];
     
     private static $jornadas;
+    private static $config;
     
     public static function getMeses() {
         return array(
@@ -739,17 +740,22 @@ class Util {
     }
     
     public static function possuiDiferencaMaior5Min($ponto) {
-        
-        $jornada = self::getJornadaData($ponto['data']);
-        if(empty($jornada)) {
-            throw new Exception('Não há jornada para a data ' . $ponto['data']);
-        }
-        
-        
-        $horasEntradasJornada = [];
-        foreach($jornada as $periodo) {
-            $horasEntradasJornada[] = $periodo[0];
-        }
+        $diferencas = self::getDiferencasPonto($ponto);
+
+        $resultado = array_filter($diferencas, function ($el) 
+        {
+            $cincoMinutos = 5 * 60;
+            if($el['entrada'] > $cincoMinutos) {
+                return true;
+            }
+            return false;
+        });
+
+        return !empty($resultado);
+    }
+
+    public static function getDiferencasPonto($ponto) {
+        $diferencas = [];
         
         for($i = 1; $i <= 4; $i++) {
             
@@ -758,38 +764,52 @@ class Util {
             }
             
             $horaEntrada = $ponto['entrada' . $i];
+            $horaSaida = $ponto['saida' . $i];
+            $jornadaHora = self::getJornadaPelaHoraEntrada($horaEntrada, $ponto['data']);
+            $horaEntradaJornada = $jornadaHora[0];
+            $horaSaidaJornada = $jornadaHora[1];
             
-            $k = 0;
-            $menorHoraJornada = null;
-            $menorDiferenca = null;
-            foreach($horasEntradasJornada as $horaEntradaJornada) {
-                
-                if($k == 0) {
-                    $menorHoraJornada = $horaEntradaJornada;
-                    $menorDiferenca = abs(Util::time_to_sec($horaEntrada) - Util::time_to_sec($horaEntradaJornada));
-                }
-                
-                $diferenca = abs(Util::time_to_sec($horaEntrada) - Util::time_to_sec($horaEntradaJornada));
-                
-                if($diferenca < $menorDiferenca) {
-                    $menorDiferenca = $diferenca;
-                    $menorHoraJornada = $horaEntradaJornada;
-                }
-                $k++;
-            }
-            
-            $diferenca = Util::time_to_sec($horaEntrada) - Util::time_to_sec($menorHoraJornada);
-            
-            if($diferenca < 0) {
-                continue;
-            }
-            
-            if($diferenca > 5 * 60) {
-                return true;
-            }
+            $diferencas[] = [
+                'entrada' => Util::time_to_sec($horaEntradaJornada) - Util::time_to_sec($horaEntrada),
+                'saida' => Util::time_to_sec($horaSaida) - Util::time_to_sec($horaSaidaJornada),
+            ];
+
         }
-        
-        return false;
+
+        return $diferencas;
+    }
+
+    private static function getJornadaPelaHoraEntrada($horaEntrada, $data) {
+        $jornada = self::getJornadaData($data);
+        if(empty($jornada)) {
+            throw new Exception('Não há jornada para a data ' . $data);
+        }
+
+        $k = 0;
+        $jornadaHora = null;
+        $menorDiferenca = null;
+        foreach($jornada as $periodo) {
+            $horaEntradaJornada = $periodo[0];
+            
+            if($k == 0) {
+                $menorDiferenca = abs(Util::time_to_sec($horaEntrada) - Util::time_to_sec($horaEntradaJornada));
+                $jornadaHora = $periodo;
+            }
+            
+            $diferenca = abs(Util::time_to_sec($horaEntrada) - Util::time_to_sec($horaEntradaJornada));
+            
+            if($diferenca < $menorDiferenca) {
+                $menorDiferenca = $diferenca;
+                $jornadaHora = $periodo;
+            }
+            $k++;
+        }
+
+        if(empty($jornadaHora)) {
+            throw new Exception('Não foi possível encontrar a joranda para a hora de entrada ' . $horaEntrada . ' na data ' . $data);
+        }
+
+        return $jornadaHora;
     }
     
     private static function getJornada($data) {
@@ -804,7 +824,7 @@ class Util {
             
             return $jornada;
         }
-        return null;
+        throw new Exception('Não foi encontrada jornada para a data ' . $data);
     }
     
     private static function getJornadaData($data) {
@@ -1004,7 +1024,7 @@ class Util {
             return;
         }
         
-        if ($segundosTrabalhados < $segundosNormal) {
+        if (self::$config['horaExtraSimples'] && $segundosTrabalhados < $segundosNormal) {
             return;
         }
 
@@ -1014,8 +1034,32 @@ class Util {
         }
         
         $possuiDiferencaMaiorQue5Minutos = self::possuiDiferencaMaior5Min($ponto);
-        
+        $diferencas = self::getDiferencasPonto($ponto);
+
+        $somaHoraExtra = 0;
+        $somaHoraFalta = 0;
+        foreach($diferencas as $diferenca) {
+            $horaExtra = 0;
+            if($diferenca['entrada'] > 0) {
+                $horaExtra += $diferenca['entrada'];
+            }else{
+                $somaHoraFalta += $diferenca['entrada'];
+            }
+
+            if($diferenca['saida'] > 0) {
+                $horaExtra += $diferenca['saida'];
+            }else {
+                $somaHoraFalta += $diferenca['saida'];
+            }
+
+            $somaHoraExtra += $horaExtra;
+        }
+
         $soma = $segundosTrabalhados - $segundosNormal;
+
+        if(!self::$config['horaExtraConsiderarHoraFalta']) {
+            $soma = $somaHoraExtra;
+        }
         
         if($possuiDiferencaMaiorQue5Minutos) {
             return $soma;
@@ -1065,28 +1109,7 @@ class Util {
     }
     
     public static function getSegundosNoturnoPonto($ponto) {
-        
-        $segundos = 0;
-        for($i = 1; $i <= 4; $i++) {
-            
-            if(!isset($ponto['entrada' . $i])) {
-                continue;
-            }
-            
-            $entrada = $ponto['entrada' . $i];
-            $saida = $ponto['saida' . $i];
-            
-            if(empty($entrada)) {
-                continue;
-            }
-            
-            $dEntrada = $ponto['dt_entrada' . $i];
-            $dSaida = $ponto['dt_saida' . $i];
-            
-            $segundos += self::getSegundosNoturno($dEntrada, $dSaida, self::$estenderHoraNoturna);
-        }
-        
-        return $segundos;
+        return $ponto->getSegundosNoturno(self::$estenderHoraNoturna);
     }
 
     public static function getSegundosNoturno(DateTime $entrada, DateTime $saida, bool $estenderHoraNoturna = false) {
@@ -1164,6 +1187,19 @@ class Util {
                ($interval->h * 60 * 60) +
                ($interval->i * 60) +
                $interval->s; 
+    }
+
+    public static function setConfig($config) {
+        foreach($config['jornadas'] as $jornada) {
+            $descanso = isset($jornada['descansoSemanal']) ? $jornada['descansoSemanal'] : 0;
+            self::addJornadaTrabalho($jornada['horarios'], $jornada['inicio'], $jornada['fim'], $descanso);
+        }
+        self::setPossuiHoraExtraIregularmenteCompensada($config['possuiHoraExtraIC']);
+        self::setEstenderHoraNoturna($config['estenderHoraNoturna']);
+        if(isset($config['informarDSR']) && $config['informarDSR']) {
+            self::$informarDSR = true;
+        }
+        self::$config = $config;
     }
 
 }
