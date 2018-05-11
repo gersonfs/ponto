@@ -745,7 +745,7 @@ class Util {
         $resultado = array_filter($diferencas, function ($el) 
         {
             $cincoMinutos = 5 * 60;
-            if($el['entrada'] > $cincoMinutos) {
+            if($el['entrada'] > $cincoMinutos || $el['saida'] > $cincoMinutos) {
                 return true;
             }
             return false;
@@ -1016,6 +1016,13 @@ class Util {
         return $diferencaCobrada;
     }
     
+    /**
+     * Quando entrou mais de 5 minutos antes ou saiu mais de 5 minutos depois, conta como hora extra
+     * Se no dia deu 10 minutos a mais na soma, vale como hora extra
+     *
+     * @param [type] $ponto
+     * @return void
+     */
     public static function getHorasExtras($ponto) {
         $segundosTrabalhados = self::getSegundosTrabalhadosHoraNoturna($ponto);
         $segundosNormal = self::getSegundosNormais($ponto);
@@ -1032,22 +1039,39 @@ class Util {
         if(empty($jornada)) {
             return $segundosTrabalhados;
         }
-        
+
+        //Feriados, domingos
+        if($segundosNormal === null) {
+            return $segundosTrabalhados;
+        }
+
+        $diferencaTotal = $segundosTrabalhados - $segundosNormal;
+        if($diferencaTotal >= 10 * 60) {
+            return $diferencaTotal;
+        }
+
         $possuiDiferencaMaiorQue5Minutos = self::possuiDiferencaMaior5Min($ponto);
         $diferencas = self::getDiferencasPonto($ponto);
 
         $somaHoraExtra = 0;
         $somaHoraFalta = 0;
+        $somaHoraExtraMaior5Min = 0;
         foreach($diferencas as $diferenca) {
             $horaExtra = 0;
             if($diferenca['entrada'] > 0) {
                 $horaExtra += $diferenca['entrada'];
+                if($diferenca['entrada'] > 5*60) {
+                    $somaHoraExtraMaior5Min += $diferenca['entrada'];
+                }
             }else{
                 $somaHoraFalta += $diferenca['entrada'];
             }
 
             if($diferenca['saida'] > 0) {
                 $horaExtra += $diferenca['saida'];
+                if($diferenca['saida'] > 5*60) {
+                    $somaHoraExtraMaior5Min += $diferenca['saida'];
+                }
             }else {
                 $somaHoraFalta += $diferenca['saida'];
             }
@@ -1055,22 +1079,15 @@ class Util {
             $somaHoraExtra += $horaExtra;
         }
 
-        $soma = $segundosTrabalhados - $segundosNormal;
+        if(!$possuiDiferencaMaiorQue5Minutos) {
+            return null;
+        }
 
         if(!self::$config['horaExtraConsiderarHoraFalta']) {
-            $soma = $somaHoraExtra;
+            $diferencaTotal = $somaHoraExtraMaior5Min;
         }
         
-        if($possuiDiferencaMaiorQue5Minutos) {
-            return $soma;
-        }
-        
-        $somaMenorQueDezMinutos = $soma <= 10 * 60;
-        if($somaMenorQueDezMinutos) {
-            return;
-        }
-
-        return $soma;
+        return $diferencaTotal;
     }
 
     public static function setPossuiHoraExtraIregularmenteCompensada($possui) {
