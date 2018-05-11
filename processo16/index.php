@@ -386,7 +386,7 @@ and open the template in the editor.
             $jornadas = Util::getJornadas();
             foreach($jornadas as $jornada) {
                 echo 'Início: ' . date("d/m/Y", strtotime($jornada['inicio']));
-                echo ' Fim: ' . date("d/m/Y", strtotime($jornada['inicio']));
+                echo ' Fim: ' . date("d/m/Y", strtotime($jornada['fim']));
                 echo '<br />';
                 foreach($jornada['jornada'] as $diaSemana=>$pontos) {
                     echo '<p>';
