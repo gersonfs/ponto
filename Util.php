@@ -111,7 +111,7 @@ class Util {
     }
 
     public static function getAusencias() {
-        return self::getRegistrosData(['ausencia', 'falta', 'compens.', 'falta just.']);
+        return self::getRegistrosData(['ausencia', 'falta', 'compens.', 'falta just.', 'falta p.']);
     }
 
     public static function getAtestados() {
@@ -1099,7 +1099,7 @@ class Util {
     }
 
     public static function getObservacoesTratadas() {
-        return ['ferias', 'atestado', 'ausencia', 'feriado', 'falta', 'licenca r.', 'lic. n. r.', 'liberac.r.', 'compens.', 'dsr', 'feriado c.', 'feriado n.c.', 'atestado p.', 'aus. de c. ponto', 'folga', 'aux. doenca', 'falta just.'];
+        return ['ferias', 'atestado', 'ausencia', 'feriado', 'falta', 'licenca r.', 'lic. n. r.', 'liberac.r.', 'compens.', 'dsr', 'feriado c.', 'feriado n.c.', 'atestado p.', 'aus. de c. ponto', 'folga', 'aux. doenca', 'falta just.', 'falta p.'];
     }
 
     public static function setRegistrosObservacoes($registros) {
