@@ -30,6 +30,7 @@ and open the template in the editor.
         $times = [];
         $times[] = [microtime(true), 'inicio'];
         include('../Util.php');
+        include('../Ponto.php');
         $config = include('config.php');
         foreach($config['jornadas'] as $jornada) {
             $descanso = isset($jornada['descansoSemanal']) ? $jornada['descansoSemanal'] : 0;
@@ -86,7 +87,7 @@ and open the template in the editor.
             if(!empty($linha[3]) && $possuiIntraJornada) {
                 $horaIntrajornada = $segundosIntrajornada; //1 hora
             }
-            $dados[$i] = [
+            $tmp = [
                 'data' => Util::dataBRToISO($linha[1]),
                 'obs' => $obs,
                 'entrada1' => $linha[3],
@@ -101,6 +102,8 @@ and open the template in the editor.
                 'mes' => $mes,
                 'semana' => $semana
             ];
+
+            $dados[$i] = new Ponto($tmp);
             
             if(Util::isDescansoSemanal($dados[$i])) {
                 $semana++;
@@ -147,7 +150,7 @@ and open the template in the editor.
                     $times[] = [microtime(true), 'inicio registro tabela'];
                     
                     $dia = Util::getDiaDaSemanaCurto($dado['data']);
-                    $mostrarHoraSemana = (Util::isSabado($dado) && isset($dados[$i+1]['is_fechamento'])) || isset($dado['is_fechamento']);
+                    $mostrarHoraSemana = ($dado->isSabado() && isset($dados[$i+1]['is_fechamento'])) || isset($dado['is_fechamento']);
                     
                     $h50 = $h100 = $h130 = $s1 = $s2 = null;
                     if($mostrarHoraSemana) {
