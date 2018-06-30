@@ -78,6 +78,11 @@ class Ponto extends ArrayObject
         return date('w', strtotime($this->ponto['data'])) == 0;
     }
 
+    /**
+     * Regra: Todo sábado e domingo trabalhado, ou quando trabalha após as 23:30
+     *
+     * @return void
+     */
     public function getHoraItinere()
     {
         $horaItinere = '00:40';
