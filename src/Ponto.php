@@ -4,13 +4,14 @@ namespace GersonSchwinn\Ponto;
 
 use GersonSchwinn\Ponto\Util;
 use DateTime;
+use \DateInterval;
 
 class Ponto extends \ArrayObject
 {
 
-    private $ponto = [];
+    private array $ponto = [];
 
-    public function __construct($ponto)
+    public function __construct(array $ponto)
     {
         $this->ponto = $ponto;
         $this->setDateTime();
@@ -87,22 +88,20 @@ class Ponto extends \ArrayObject
         return $dias[date('w', strtotime($this->ponto['data']))];
     }
 
-    public function isSabado()
+    public function isSabado(): bool
     {
         return date('w', strtotime($this->ponto['data'])) == 6;
     }
 
-    public function isDomingo()
+    public function isDomingo(): bool
     {
         return date('w', strtotime($this->ponto['data'])) == 0;
     }
 
     /**
      * Regra: Todo sábado e domingo trabalhado, ou quando trabalha após as 23:30
-     *
-     * @return void
      */
-    public function getHoraItinere()
+    public function getHoraItinere(): ?string
     {
         $horaItinere = '00:40';
 
@@ -130,7 +129,7 @@ class Ponto extends \ArrayObject
         return null;
     }
 
-    public function getSegundosNoturno($estenderHoraNoturna = false)
+    public function getSegundosNoturno(bool $estenderHoraNoturna = false): int
     {
         $segundos = 0;
         for ($i = 1; $i <= 4; $i++) {

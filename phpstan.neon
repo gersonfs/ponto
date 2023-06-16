@@ -1,0 +1,11 @@
+parameters:
+    level: 6
+    bootstrapFiles:
+        - config/bootstrap.php
+    customRulesetUsed: true
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false
+    treatPhpDocTypesAsCertain: false
+
+#includes:
+#    - phpstan-baseline.php

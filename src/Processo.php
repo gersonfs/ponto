@@ -10,17 +10,17 @@ use Util;
  */
 class Processo
 {
-
-    public function __construct($config)
+    /** @var \GersonSchwinn\Ponto\JornadaSemanal[] */
+    private array $jornadasSemanais;
+    
+    public function __construct(array $jornadasSemanais)
     {
-        $this->config = $config;
-        $this->setJornadas();
+        $this->jornadasSemanais = $jornadasSemanais;
     }
 
-    private function setJornadas()
+    public function getJornadasSemanais(): array
     {
-        foreach ($this->config['jornadas'] as $jornada) {
-            Util::addJornadaTrabalho($jornada['horarios'], $jornada['inicio'], $jornada['fim']);
-        }
+        return $this->jornadasSemanais;
     }
+    
 }

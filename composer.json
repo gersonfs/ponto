@@ -19,6 +19,7 @@
       "php": ">=8.2"
     },
   "scripts": {
-    "test": "phpunit"
+    "test": "phpunit",
+    "stan": "phpstan analyse src tests"
   }
 }

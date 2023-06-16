@@ -4,7 +4,6 @@ namespace processo13;
 use Util;
 
 ini_set('display_errors', 'On');
-include('../Util.php');
 
 
 $o = new Processo13();
@@ -97,5 +96,3 @@ class Processo13
         throw new Exception('Não foi encontrado índice para a data ' . $data->format('d/m/Y'));
     }
 }
-
-?>
