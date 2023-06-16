@@ -119,7 +119,7 @@ and open the template in the editor.
             }
 
             $horaIntrajornada = null;
-            if (!empty($linha[3]) && $possuiIntraJornada) {
+            if (!empty($linha[3]) && $possuiIntraJornada) { //@phpstan-ignore-line
                 $horaIntrajornada = $segundosIntrajornada; //1 hora
             }
             $dados[$i] = new Ponto([

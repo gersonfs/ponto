@@ -556,7 +556,7 @@ class Util
         return intval($soma / 60 / 60);
     }
 
-    public static function getHorasNormalSemana(Ponto $ponto, array $pontos): float 
+    public static function getHorasNormalSemana(Ponto $ponto, array $pontos): int 
     {
         $horas = 0;
         foreach ($pontos as $ponto2) {
@@ -567,7 +567,7 @@ class Util
         return $horas;
     }
 
-    public static function getSegundosNormalSemana(Ponto $ponto, array $pontos): ?float 
+    public static function getSegundosNormalSemana(Ponto $ponto, array $pontos): ?int 
     {
         $horas = self::getHorasNormalSemana($ponto, $pontos);
         

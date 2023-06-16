@@ -20,6 +20,6 @@
     },
   "scripts": {
     "test": "phpunit",
-    "stan": "phpstan analyse src tests"
+    "stan": "phpstan analyse src tests public"
   }
 }
