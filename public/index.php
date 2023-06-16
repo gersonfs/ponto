@@ -1,4 +1,9 @@
 <?php
+include '../vendor/autoload.php';
+
+use GersonSchwinn\Ponto\Ponto;
+use GersonSchwinn\Ponto\Util;
+
 ini_set('display_errors', 'On');
 ?>
 <!DOCTYPE html>
@@ -27,8 +32,6 @@ and open the template in the editor.
     </head>
     <body>
         <?php
-        include('Util.php');
-        
         Util::addJornadaTrabalho([
             1 => [
                 ['07:30', '12:30'],
@@ -64,7 +67,10 @@ and open the template in the editor.
         $segundosIntrajornada = 60 * 60;
         $possuiIntraJornada = true;
 
-        $f = fopen('ponto5.csv', 'r');
+        $f = fopen('../ponto5.csv', 'r');
+        /**
+         * @var \GersonSchwinn\Ponto\Ponto[] $dados
+         */
         $dados = [];
         $i = 0;
         $mes = 0;
@@ -106,7 +112,7 @@ and open the template in the editor.
             if(!empty($linha[3]) && $possuiIntraJornada) {
                 $horaIntrajornada = $segundosIntrajornada; //1 hora
             }
-            $dados[$i] = [
+            $dados[$i] = new Ponto([
                 'data' => Util::dataBRToISO($linha[1]),
                 'obs' => $obs,
                 'entrada1' => $linha[3],
@@ -119,8 +125,8 @@ and open the template in the editor.
                 'saida4' => $linha[10],
                 'hora_intrajornada' => $horaIntrajornada,
                 'mes' => $mes,
-                'semana' => $semana
-            ];
+                'semana' => $semana,
+            ]);
             
             if(Util::isDescansoSemanal($dados[$i])) {
                 $semana++;
@@ -130,58 +136,6 @@ and open the template in the editor.
         fclose($f);
 
         Util::setRegistrosObservacoes($registrosObservacoes);
-        
-        /*Util::setJornadaTrabalho([
-            1 => [
-                ['07:15', '12:00'],
-                ['13:00', '16:15'],
-            ],
-            2 => [
-                ['07:15', '12:00'],
-                ['13:00', '16:15'],
-            ],
-            3 => [
-                ['07:15', '12:00'],
-                ['13:00', '16:15'],
-            ],
-            4 => [
-                ['07:15', '12:00'],
-                ['13:00', '16:15'],
-            ],
-            5 => [
-                ['07:15', '12:00'],
-                ['13:00', '16:15'],
-            ],
-            6 => [
-                ['08:00', '12:00'],
-            ],
-        ]);
-
-        Util::setJornadaTrabalho([
-            1 => [
-                ['07:15', '12:00'],
-                ['13:00', '17:15'],
-            ],
-            2 => [
-                ['07:15', '12:00'],
-                ['13:00', '17:15'],
-            ],
-            3 => [
-                ['07:15', '12:00'],
-                ['13:00', '17:15'],
-            ],
-            4 => [
-                ['07:15', '12:00'],
-                ['13:00', '17:15'],
-            ],
-            5 => [
-                ['07:15', '12:00'],
-                ['13:00', '16:15'],
-            ],
-        ]);*/
-        
-        //echo '<pre>' . print_r($dados, true) . '</pre>';
-        
         ?>
         <pre>
         <table style="width: 80%">
@@ -214,8 +168,7 @@ and open the template in the editor.
                 $totalHEMenosHIC = $totalHTMes = $totalHNMes = $tSegundosNormais = $tSegundosTrabalhados = $sHE = $sHIC = $sH100 = $sHN = $sHi = 0;
                 $totaisMeses = [];
                 foreach ($dados as $i=>$dado) {
-                    $dia = Util::getDiaDaSemanaCurto($dado['data']);
-                    $mostrarHoraSemana = (Util::isSabado($dado) && isset($dados[$i+1]['is_fechamento'])) || isset($dado['is_fechamento']);
+                    $mostrarHoraSemana = ($dado->isSabado() && isset($dados[$i+1]['is_fechamento'])) || isset($dado['is_fechamento']);
                     
                     $h50 = $h100 = $h130 = $s1 = $s2 = null;
                     if($mostrarHoraSemana) {
@@ -254,8 +207,8 @@ and open the template in the editor.
                     }
 
                     $totalHEMenosHIC += $heHic;
-                    echo '<tr class="'. $dia .'">';
-                    echo '<td>' . $dia . '</td>';
+                    echo '<tr class="'. $dado->getDiaDaSemanaCurto() .'">';
+                    echo '<td>' . $dado->getDiaDaSemanaCurto() . '</td>';
                     echo '<td>' . Util::dataISOToBR($dado['data']) . '</td>';
                     echo '<td>' . $dado['obs'] . '</td>';
                     echo '<td>' . $dado['entrada1'] . '</td>';
@@ -309,7 +262,7 @@ and open the template in the editor.
                             'h100' => $h100,
                             'h130' => $h130,
                             'hn' => $sHN,
-                            'hi' => $sHi
+                            'hi' => $sHi,
                         ];
 
                         echo '<tr>';

@@ -1,0 +1,20 @@
+{
+    "name": "gersonschwinn/ponto",
+    "require-dev": {
+        "phpunit/phpunit": "^10.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "GersonSchwinn\\Ponto\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Gerson Felipe Schwinn",
+            "email": "gerson@onehost.com.br"
+        }
+    ],
+    "require": {
+      "php": ">=8.2"
+    }
+}

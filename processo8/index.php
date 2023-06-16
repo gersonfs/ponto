@@ -1,4 +1,7 @@
 <?php
+
+use src\Ponto;
+
 ini_set('display_errors', 'On');
 ?>
 <!DOCTYPE html>

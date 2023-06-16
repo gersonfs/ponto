@@ -1,5 +1,10 @@
 <?php
 
+namespace GersonSchwinn\Ponto;
+use DateTime;
+use Exception;
+use DateInterval;
+
 class Util {
 
     /**
@@ -15,7 +20,7 @@ class Util {
     private static $registrosObservacoes = [];
     
     private static $jornadas;
-    private static $config;
+    private static $config = [];
     
     public static function getMeses() {
         return array(
@@ -73,20 +78,6 @@ class Util {
             return '';
         }
         $dias = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
-        return $dias[date('w', strtotime($data))];
-    }
-
-    public static function getDiaDaSemanaCurto($data) {
-        if (!strlen($data)) {
-            return '';
-        }
-        
-        $dias = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-        
-        if(preg_match("/^\d+$/", $data)) {
-            return $dias[$data];
-        }
-        
         return $dias[date('w', strtotime($data))];
     }
 
@@ -729,7 +720,7 @@ class Util {
         return $segundosDiurno + self::converterSegundosNormalSegundosHoraNoturna($segundosNoturnos);
     }
     
-    public static function getSegundosDiurno($ponto) {
+    public static function getSegundosDiurno(Ponto $ponto) {
         $segundosTrabalhados = self::getSegundosTrabalhados($ponto);
         $segundosNoturnos = self::getSegundosNoturnoPonto($ponto);
         return $segundosTrabalhados - $segundosNoturnos;
@@ -950,7 +941,7 @@ class Util {
         return 0;
     }
 
-    public static function getSegundosTrabalhadosSemana($ponto, $pontos) {
+    public static function getSegundosTrabalhadosSemana(Ponto $ponto, array $pontos) {
         $segundos = 0;
         foreach ($pontos as $ponto2) {
             if ($ponto['semana'] == $ponto2['semana']) {
@@ -1031,7 +1022,7 @@ class Util {
             return;
         }
         
-        if (self::$config['horaExtraSimples'] && $segundosTrabalhados < $segundosNormal) {
+        if ((self::$config['horaExtraSimples'] ?? false) && $segundosTrabalhados < $segundosNormal) {
             return;
         }
 
@@ -1125,7 +1116,7 @@ class Util {
         return ($segundosNormais / $segundosUmaHoraNoturna) * 60 * 60;
     }
     
-    public static function getSegundosNoturnoPonto($ponto) {
+    public static function getSegundosNoturnoPonto(Ponto $ponto) {
         return $ponto->getSegundosNoturno(self::$estenderHoraNoturna);
     }
 

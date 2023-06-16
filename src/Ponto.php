@@ -1,6 +1,11 @@
 <?php
 
-class Ponto extends ArrayObject
+namespace GersonSchwinn\Ponto;
+
+use GersonSchwinn\Ponto\Util;
+use DateTime;
+
+class Ponto extends \ArrayObject
 {
 
     private $ponto = [];
@@ -11,22 +16,22 @@ class Ponto extends ArrayObject
         $this->setDateTime();
     }
 
-    public function offsetExists($index) : bool
+    public function offsetExists($index): bool
     {
         return isset($this->ponto[$index]);
     }
 
-    public function offsetGet($index)
+    public function offsetGet(mixed $index): mixed
     {
         return $this->ponto[$index];
     }
 
-    public function offsetSet($index, $newval)
+    public function offsetSet(mixed $index, mixed $newval): void
     {
         $this->ponto[$index] = $newval;
     }
 
-    public function offsetUnset($index)
+    public function offsetUnset(mixed $index): void
     {
         unset($this->ponto[$index]);
     }
@@ -40,7 +45,7 @@ class Ponto extends ArrayObject
             $t1 = DateTime::createFromFormat("Y-m-d H:i", $this->ponto['data'] . ' ' . $this->ponto['entrada' . $i]);
             $t2 = DateTime::createFromFormat("Y-m-d H:i", $this->ponto['data'] . ' ' . $this->ponto['saida' . $i]);
 
-            if($t2 === false) {
+            if ($t2 === false) {
                 debug($i);
                 debug($this->ponto);
             }
@@ -67,6 +72,20 @@ class Ponto extends ArrayObject
         return $segundos;
     }
 
+    public function getDiaDaSemanaCurto(): string
+    {
+        if (!strlen($this->ponto['data'])) {
+            return '';
+        }
+
+        $dias = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+        if (preg_match("/^\d+$/", $this->ponto['data'])) {
+            return $dias[$this->ponto['data']];
+        }
+
+        return $dias[date('w', strtotime($this->ponto['data']))];
+    }
 
     public function isSabado()
     {
@@ -111,27 +130,28 @@ class Ponto extends ArrayObject
         return null;
     }
 
-    public function getSegundosNoturno($estenderHoraNoturna = false) {
+    public function getSegundosNoturno($estenderHoraNoturna = false)
+    {
         $segundos = 0;
-        for($i = 1; $i <= 4; $i++) {
-            
-            if(!isset($this->ponto['entrada' . $i])) {
+        for ($i = 1; $i <= 4; $i++) {
+
+            if (!isset($this->ponto['entrada' . $i])) {
                 continue;
             }
-            
+
             $entrada = $this->ponto['entrada' . $i];
             $saida = $this->ponto['saida' . $i];
-            
-            if(empty($entrada)) {
+
+            if (empty($entrada)) {
                 continue;
             }
-            
+
             $dEntrada = $this->ponto['dt_entrada' . $i];
             $dSaida = $this->ponto['dt_saida' . $i];
-            
+
             $segundos += Util::getSegundosNoturno($dEntrada, $dSaida, $estenderHoraNoturna);
         }
-        
+
         return $segundos;
     }
 
