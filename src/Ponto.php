@@ -36,7 +36,7 @@ class Ponto extends \ArrayObject
         unset($this->ponto[$index]);
     }
 
-    private function setDateTime()
+    private function setDateTime(): void
     {
         for ($i = 1; $i <= 4; $i++) {
             if (!isset($this->ponto['entrada' . $i]) || empty($this->ponto['entrada' . $i])) {
@@ -59,7 +59,7 @@ class Ponto extends \ArrayObject
         }
     }
 
-    public function getSegundosTrabalhados()
+    public function getSegundosTrabalhados(): int
     {
         $segundos = 0;
         for ($i = 1; $i <= 4; $i++) {
