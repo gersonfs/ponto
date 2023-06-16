@@ -33,31 +33,28 @@ and open the template in the editor.
     </head>
     <body>
         <?php
-        $dataInicio = DateTime::createFromFormat('d/m/Y', '05/03/2014');
-        $dataFim = DateTime::createFromFormat('d/m/Y', '12/06/2016');
+        $dataInicio = DateTime::createFromFormat('d/m/Y', '08/10/2012');
+        $dataFim = DateTime::createFromFormat('d/m/Y', '19/05/2016');
         $jornada = [
             1 => [
-                ['07:30', '12:30'],
-                ['13:00', '16:00'],
+                ['16:15', '21:30'],
+                ['22:30', '01:30'],
             ],
             2 => [
-                ['07:30', '12:30'],
-                ['13:00', '16:00'],
+                ['16:15', '21:30'],
+                ['22:30', '01:30'],
             ],
             3 => [
-                ['07:30', '12:30'],
-                ['13:00', '16:00'],
+                ['16:15', '21:30'],
+                ['22:30', '01:30'],
             ],
             4 => [
-                ['07:30', '12:30'],
-                ['13:00', '16:00'],
+                ['16:15', '21:30'],
+                ['22:30', '01:30'],
             ],
             5 => [
-                ['07:30', '12:30'],
-                ['13:00', '16:00'],
-            ],
-            6 => [
-                ['07:15', '11:15'],
+                ['16:15', '21:30'],
+                ['22:30', '01:30'],
             ],
         ];
 
@@ -77,7 +74,7 @@ and open the template in the editor.
         $segundosIntrajornada = 60 * 60;
         $possuiIntraJornada = true;
 
-        $f = fopen('../processos/ponto5.csv', 'r');
+        $f = fopen('../processos/processo21.csv', 'r');
         /**
          * @var \GersonSchwinn\Ponto\Ponto[] $dados
          */
@@ -131,8 +128,8 @@ and open the template in the editor.
                 'saida2' => $linha[6],
                 'entrada3' => $linha[7],
                 'saida3' => $linha[8],
-                'entrada4' => $linha[9],
-                'saida4' => $linha[10],
+                'entrada4' => $linha[9] ?? null,
+                'saida4' => $linha[10] ?? null,
                 'hora_intrajornada' => $horaIntrajornada,
                 'mes' => $mes,
                 'semana' => $semana,

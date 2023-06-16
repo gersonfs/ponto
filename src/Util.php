@@ -502,7 +502,7 @@ class Util
     /**
      * Retorna quantidade de horas normais
      */
-    public static function getHorasNormais(Ponto $ponto, array $options = []): ?int
+    public static function getHorasNormais(Ponto $ponto, array $options = []): ?float
     {
 
         $options += [
@@ -553,10 +553,10 @@ class Util
         }
 
 
-        return intval($soma / 60 / 60);
+        return $soma / 60 / 60;
     }
 
-    public static function getHorasNormalSemana(Ponto $ponto, array $pontos): int 
+    public static function getHorasNormalSemana(Ponto $ponto, array $pontos): float 
     {
         $horas = 0;
         foreach ($pontos as $ponto2) {
@@ -571,7 +571,7 @@ class Util
     {
         $horas = self::getHorasNormalSemana($ponto, $pontos);
         
-        return $horas * 60 * 60;
+        return intval($horas * 60 * 60);
     }
 
     public static function isDescansoSemanal(Ponto $ponto): bool
@@ -727,7 +727,7 @@ class Util
             return null;
         }
 
-        if (!self::$config['horaExtraConsiderarHoraFalta']) {
+        if (!isset(self::$config['horaExtraConsiderarHoraFalta']) || !self::$config['horaExtraConsiderarHoraFalta']) {
             $diferencaTotal = $somaHoraExtraMaior5Min;
         }
 
