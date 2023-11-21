@@ -576,25 +576,7 @@ class Util
 
     public static function isDescansoSemanal(Ponto $ponto): bool
     {
-        if (self::$informarDSR) {
-            if ($ponto['obs'] == 'dsr') {
-                return true;
-            }
-            return false;
-        }
-
-        return date('w', strtotime($ponto['data'])) == self::getDiaDescansoSemanal($ponto['data']);
-    }
-
-    public static function getDiaDescansoSemanal(string $data): int
-    {
-        $jornada = self::getJornada($data);
-
-        if (isset($jornada['descansoSemanal'])) {
-            return $jornada['descansoSemanal'];
-        }
-
-        return 0;
+        return $ponto->isDescansoSemanal(self::$informarDSR);
     }
 
     public static function getSegundosTrabalhadosSemana(Ponto $ponto, array $pontos): int

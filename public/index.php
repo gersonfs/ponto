@@ -133,9 +133,9 @@ and open the template in the editor.
                 'hora_intrajornada' => $horaIntrajornada,
                 'mes' => $mes,
                 'semana' => $semana,
-            ]);
+            ], $jornadas[0]);
 
-            if (Util::isDescansoSemanal($dados[$i])) {
+            if ($dados[$i]->isDescansoSemanal()) {
                 $semana++;
             }
             $i++;

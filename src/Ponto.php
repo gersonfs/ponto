@@ -10,10 +10,12 @@ class Ponto extends \ArrayObject
 {
 
     private array $ponto = [];
+    private JornadaSemanal $jornadaSemanal;
 
-    public function __construct(array $ponto)
+    public function __construct(array $ponto, JornadaSemanal $jornadaSemanal)
     {
         $this->ponto = $ponto;
+        $this->jornadaSemanal = $jornadaSemanal;
         $this->setDateTime();
     }
 
@@ -152,6 +154,18 @@ class Ponto extends \ArrayObject
         }
 
         return $segundos;
+    }
+
+    public function isDescansoSemanal(bool $informarDsr = true): bool
+    {
+        if ($informarDsr) {
+            if ($this->ponto['obs'] == 'dsr') {
+                return true;
+            }
+            return false;
+        }
+
+        return date('w', strtotime($this->ponto['data'])) == $this->jornadaSemanal->getDiaDescansoSemanal();
     }
 
 }
